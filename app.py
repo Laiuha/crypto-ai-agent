@@ -3,11 +3,16 @@ import requests
 import plotly.express as px
 import pandas as pd
 from datetime import datetime
+from pathlib import Path
 
-st.set_page_config(page_title="AI Crypto Market Scanner", layout="wide")
+st.set_page_config(page_title="Koshka Crypto AI Agent", layout="wide")
 
 st.markdown("""
 <style>
+section[data-testid="stSidebar"] { width: 360px !important; }
+section[data-testid="stSidebar"] > div {
+    background: linear-gradient(180deg, #171720, #252538);
+}
 .card {
     background: linear-gradient(135deg, #1f1f29, #28283a);
     padding: 22px;
@@ -20,15 +25,8 @@ st.markdown("""
     border-radius: 18px;
     min-height: 145px;
 }
-.coin-symbol {
-    font-size: 32px;
-    font-weight: 800;
-}
-.big-price {
-    font-size: 28px;
-    font-weight: 800;
-    margin-top: 12px;
-}
+.coin-symbol { font-size: 32px; font-weight: 800; }
+.big-price { font-size: 28px; font-weight: 800; margin-top: 12px; }
 .badge {
     display: inline-block;
     padding: 6px 12px;
@@ -39,31 +37,56 @@ st.markdown("""
 .badge-green { background:#064e3b; color:#86efac; }
 .badge-yellow { background:#713f12; color:#fde68a; }
 .badge-red { background:#7f1d1d; color:#fca5a5; }
-.small-muted {
-    color: #9ca3af;
-    font-size: 14px;
+.small-muted { color: #9ca3af; font-size: 14px; }
+.koshka-title {
+    font-size: 42px;
+    font-weight: 900;
 }
 </style>
 """, unsafe_allow_html=True)
 
+# ---------------- CAT HEADER ----------------
+cat_black = Path("cat_black.png")
+cat_orange = Path("cat_orange.png")
+
+c1, c2, c3 = st.columns([1, 3, 1])
+
+with c1:
+    if cat_black.exists():
+        st.image(str(cat_black), width=150)
+
+with c2:
+    st.markdown("<div class='koshka-title'>🐈‍⬛ Koshka Crypto AI Agent</div>", unsafe_allow_html=True)
+    st.caption("Early-signal crypto scanner. Avoids chasing coins that already pumped. Educational only — not financial advice.")
+
+with c3:
+    if cat_orange.exists():
+        st.image(str(cat_orange), width=150)
+
 # ---------------- SIDEBAR ----------------
-st.sidebar.title("⚙️ Settings")
+st.sidebar.markdown("""
+# ⚙️ AI Scanner Settings
+Customize your market scanner
+
+🟢 **LIVE MARKET MODE**  
+Scanning real-time crypto data
+""")
 
 currency = st.sidebar.selectbox(
-    "Currency",
+    "💱 Currency",
     ["usd", "aed", "eur", "gbp", "rub"],
     index=1
 )
 
 risk_mode = st.sidebar.selectbox(
-    "Risk mode",
+    "⚠️ Risk mode",
     ["Conservative", "Balanced", "Aggressive"],
     index=1
 )
 
 scan_size = st.sidebar.slider(
-    "Market scan size",
-    20, 100, 50, step=10
+    "🌍 Market scan size",
+    20, 200, 100, step=10
 )
 
 coin_map = {
@@ -102,20 +125,13 @@ symbol_map = {
     "Polygon": "MATIC"
 }
 
-selected_coins = st.sidebar.multiselect(
-    "Selected coins — max 5",
+selected_coin = st.sidebar.selectbox(
+    "🪙 Coin for decision",
     list(coin_map.keys()),
-    default=["Bitcoin", "Ethereum", "Solana"]
+    index=0
 )
 
-if len(selected_coins) > 5:
-    st.sidebar.error("Please select max 5 coins.")
-    st.stop()
-
-if not selected_coins:
-    st.sidebar.warning("Select at least one coin.")
-    st.stop()
-
+selected_coins = [selected_coin]
 
 # ---------------- HELPERS ----------------
 def format_price(price):
@@ -123,7 +139,7 @@ def format_price(price):
         return "N/A"
     if price >= 1000:
         return f"{price:,.0f}"
-    elif price >= 1:
+    if price >= 1:
         return f"{price:.2f}"
     return f"{price:.5f}"
 
@@ -136,39 +152,7 @@ def signal_badge(score):
     return "RISKY / WEAK", "badge-red"
 
 
-def get_selected_prices(selected_coins, currency):
-    ids = ",".join([coin_map[name] for name in selected_coins])
-
-    url = "https://api.coingecko.com/api/v3/simple/price"
-    params = {
-        "ids": ids,
-        "vs_currencies": currency,
-        "include_24hr_change": "true"
-    }
-
-    response = requests.get(url, params=params, timeout=15)
-
-    if response.status_code != 200:
-        st.error(f"API error: {response.status_code}. Please refresh.")
-        return []
-
-    data = response.json()
-    coins = []
-
-    for name in selected_coins:
-        coin_id = coin_map[name]
-
-        if coin_id in data and currency in data[coin_id]:
-            coins.append({
-                "name": name,
-                "symbol": symbol_map.get(name, name),
-                "price": data[coin_id][currency],
-                "change_24h": data[coin_id].get(f"{currency}_24h_change", 0)
-            })
-
-    return coins
-
-
+@st.cache_data(ttl=300)
 def get_market_data(currency, scan_size):
     url = "https://api.coingecko.com/api/v3/coins/markets"
 
@@ -180,17 +164,25 @@ def get_market_data(currency, scan_size):
         "price_change_percentage": "1h,24h,7d"
     }
 
-    response = requests.get(url, params=params, timeout=20)
+    headers = {
+        "accept": "application/json",
+        "User-Agent": "Koshka-Crypto-AI-Agent"
+    }
+
+    response = requests.get(url, params=params, headers=headers, timeout=20)
+
+    if response.status_code == 429:
+        return {"error": "API rate limit reached. Please wait 5 minutes and refresh."}
 
     if response.status_code != 200:
-        st.warning("Global market scan unavailable. Please refresh.")
-        return []
+        return {"error": f"API error: {response.status_code}"}
 
     data = response.json()
-    market = []
 
+    market = []
     for coin in data:
         market.append({
+            "id": coin.get("id"),
             "name": coin.get("name"),
             "symbol": coin.get("symbol", "").upper(),
             "price": coin.get("current_price"),
@@ -201,7 +193,26 @@ def get_market_data(currency, scan_size):
             "change_7d": coin.get("price_change_percentage_7d_in_currency") or 0,
         })
 
-    return market
+    return {"data": market}
+
+
+def get_selected_coin_from_market(market, selected_coin):
+    coin_id = coin_map[selected_coin]
+
+    for coin in market:
+        if coin["id"] == coin_id:
+            return {
+                "name": selected_coin,
+                "symbol": symbol_map.get(selected_coin, coin["symbol"]),
+                "price": coin["price"],
+                "change_1h": coin["change_1h"],
+                "change_24h": coin["change_24h"],
+                "change_7d": coin["change_7d"],
+                "market_cap": coin["market_cap"],
+                "volume": coin["volume"]
+            }
+
+    return None
 
 
 def score_emerging_setup(coin, risk_mode):
@@ -230,7 +241,6 @@ def score_emerging_setup(coin, risk_mode):
         min_market_cap = 500_000_000
         min_volume = 50_000_000
 
-    # Early signal, not late pump
     if 0.3 <= c1 <= 2.5:
         score += 3
         reasons.append("early 1h momentum")
@@ -247,7 +257,6 @@ def score_emerging_setup(coin, risk_mode):
         score += 2
         reasons.append("good liquidity")
 
-    # Penalties
     if c24 > max_24h:
         score -= 3
         reasons.append("24h move may be overextended")
@@ -263,10 +272,6 @@ def score_emerging_setup(coin, risk_mode):
     if c24 < -5:
         score -= 3
         reasons.append("falling momentum risk")
-
-    if volume <= 0:
-        score -= 3
-        reasons.append("weak volume data")
 
     if not reasons:
         reasons.append("no strong early setup")
@@ -284,67 +289,62 @@ def get_top_signals(market, risk_mode, limit=5):
     return sorted(scored, key=lambda x: x["score"], reverse=True)[:limit]
 
 
-def get_selected_decision(coins):
-    if not coins:
+def get_coin_decision(coin, risk_mode):
+    if not coin:
         return "NO DATA ⚠️", "Live data is unavailable.", 0
 
-    avg_change = sum(c["change_24h"] for c in coins) / len(coins)
-    volatility = sum(abs(c["change_24h"]) for c in coins) / len(coins)
+    score, reasons = score_emerging_setup(coin, risk_mode)
 
-    confidence = min(int(abs(avg_change) * 18), 90)
+    confidence = min(max(score * 10, 40), 90)
 
-    if volatility > 5:
-        confidence -= 15
-
-    confidence = max(confidence, 50)
-
-    if avg_change > 2:
-        return "POSITIVE WATCH 🚀", "Selected coins show positive momentum.", confidence
-    elif avg_change < -2:
-        return "CAUTION ❌", "Selected coins show negative momentum.", confidence
-    return "WATCH 👀", "Selected coins are unclear. No strong signal.", confidence
+    if score >= 8:
+        return "STRONG SETUP 🚀", "Selected coin shows a strong early setup.", confidence
+    elif score >= 5:
+        return "WATCH 👀", "Selected coin has some positive signals, but not enough for aggressive action.", confidence
+    else:
+        return "CAUTION ⚠️", "Selected coin does not show a strong clean setup right now.", confidence
 
 
-# ---------------- LOAD ----------------
-with st.spinner("Loading selected coins..."):
-    selected_data = get_selected_prices(selected_coins, currency)
+# ---------------- LOAD DATA ----------------
+with st.spinner("Loading live market data..."):
+    market_response = get_market_data(currency, scan_size)
 
-with st.spinner("Scanning market for early signals..."):
-    market_data = get_market_data(currency, scan_size)
+if "error" in market_response:
+    st.error(market_response["error"])
+    st.info("Tip: CoinGecko free API can rate-limit. Wait a few minutes, then refresh.")
+    market_data = []
+else:
+    market_data = market_response["data"]
 
+selected_data = get_selected_coin_from_market(market_data, selected_coin) if market_data else None
 top_signals = get_top_signals(market_data, risk_mode, 5) if market_data else []
 emerging_best = top_signals[0] if top_signals else None
-decision, reason, confidence = get_selected_decision(selected_data)
+decision, reason, confidence = get_coin_decision(selected_data, risk_mode)
 
-# ---------------- HEADER ----------------
-st.title("🤖 AI Crypto Market Scanner")
-st.caption("Early-signal scanner. Avoids chasing coins that already pumped. Educational only — not financial advice.")
-
-# ---------------- SELECTED COINS ----------------
-st.subheader("📊 Selected Coins")
+# ---------------- SELECTED COIN ----------------
+st.subheader("📊 Selected Coin")
 
 if selected_data:
-    cols = st.columns(3)
+    color = "#86efac" if selected_data["change_24h"] >= 0 else "#f87171"
+    arrow = "▲" if selected_data["change_24h"] >= 0 else "▼"
 
-    for i, coin in enumerate(selected_data):
-        with cols[i % 3]:
-            color = "#86efac" if coin["change_24h"] >= 0 else "#f87171"
-            arrow = "▲" if coin["change_24h"] >= 0 else "▼"
-
-            st.markdown(f"""
-            <div class="metric-card">
-                <div class="coin-symbol">{coin['symbol']}</div>
-                <div class="big-price">{format_price(coin['price'])} {currency.upper()}</div>
-                <div style="color:{color}; font-size:18px; margin-top:12px;">
-                    {arrow} {coin['change_24h']:.2f}% / 24h
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class="metric-card">
+        <div class="coin-symbol">{selected_data['symbol']}</div>
+        <div class="big-price">{format_price(selected_data['price'])} {currency.upper()}</div>
+        <div style="color:{color}; font-size:18px; margin-top:12px;">
+            {arrow} {selected_data['change_24h']:.2f}% / 24h
+        </div>
+        <p class="small-muted">
+            1h: {selected_data['change_1h']:.2f}% | 7d: {selected_data['change_7d']:.2f}%
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 else:
-    st.warning("No selected coin data available.")
+    st.warning("No selected coin data available. Increase market scan size or refresh later.")
 
-# ---------------- EMERGING BEST ----------------
-st.subheader("🌱 Best Early Signal")
+# ---------------- BEST SIGNAL ----------------
+st.subheader("🌱 Best Early Signal From Market")
 
 if emerging_best:
     badge_text, badge_class = signal_badge(emerging_best["score"])
@@ -359,7 +359,7 @@ if emerging_best:
            <b>7d:</b> {emerging_best['change_7d']:.2f}%</p>
         <p><b>Setup score:</b> {emerging_best['score']}</p>
         <p><b>Why this coin:</b> {', '.join(emerging_best['reasons'])}</p>
-        <p class="small-muted">The scanner prefers moderate early movement and penalizes overheated assets.</p>
+        <p class="small-muted">Prefers moderate early movement and penalizes overheated assets.</p>
     </div>
     """, unsafe_allow_html=True)
 else:
@@ -369,10 +369,10 @@ else:
 if top_signals:
     st.subheader("🔥 Top 5 Early Signals")
 
-    table_rows = []
+    rows = []
     for coin in top_signals:
         label, _ = signal_badge(coin["score"])
-        table_rows.append({
+        rows.append({
             "Coin": f"{coin['symbol']} — {coin['name']}",
             "Price": f"{format_price(coin['price'])} {currency.upper()}",
             "1h %": round(coin["change_1h"], 2),
@@ -383,28 +383,30 @@ if top_signals:
             "Why": ", ".join(coin["reasons"])
         })
 
-    st.dataframe(pd.DataFrame(table_rows), use_container_width=True, hide_index=True)
+    st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
 
 # ---------------- CHART ----------------
-if selected_data:
-    st.subheader("📈 Selected Coins Comparison")
+if top_signals:
+    st.subheader("📈 Top Signals Comparison")
 
     fig = px.bar(
-        x=[c["symbol"] for c in selected_data],
-        y=[c["price"] for c in selected_data],
-        labels={"x": "Coin", "y": currency.upper()},
-        title=f"Selected coin prices in {currency.upper()}"
+        x=[c["symbol"] for c in top_signals],
+        y=[c["score"] for c in top_signals],
+        labels={"x": "Coin", "y": "Setup Score"},
+        title="Top early-signal setup scores"
     )
+
     st.plotly_chart(fig, use_container_width=True)
 
 # ---------------- DECISION ----------------
-st.subheader("🤖 Selected Coins Decision")
+st.subheader("🤖 Decision for Selected Coin")
 
 st.markdown(f"""
 <div class="card">
     <h2>{decision}</h2>
     <p>{reason}</p>
     <p><b>Confidence:</b> {confidence}%</p>
+    <p class="small-muted">Decision is based only on the selected coin, not on a basket average.</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -412,14 +414,14 @@ st.markdown(f"""
 st.subheader("📤 Export Report")
 
 report = f"""
-AI Crypto Market Scanner Report
+Koshka Crypto AI Agent Report
 Generated: {datetime.now()}
 
 Currency: {currency.upper()}
 Risk mode: {risk_mode}
 Scan size: Top {scan_size}
 
-Selected coins:
+Selected coin:
 {selected_data}
 
 Best early signal:
@@ -428,7 +430,7 @@ Best early signal:
 Top 5 signals:
 {top_signals}
 
-Selected coins decision:
+Decision:
 {decision}
 Reason: {reason}
 Confidence: {confidence}%
@@ -440,8 +442,9 @@ This is not financial advice. It is an educational early-signal market scanner.
 st.download_button(
     "Download Report",
     report,
-    file_name="crypto_market_scanner_report.txt"
+    file_name="koshka_crypto_ai_report.txt"
 )
 
 if st.button("🔄 Refresh Data"):
+    st.cache_data.clear()
     st.rerun()
