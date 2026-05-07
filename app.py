@@ -1392,6 +1392,130 @@ def factor_interpretations(coin):
 
     return {"h1": h1, "d7": d7, "mcap": mcap_i, "vol": vol, "mom": mom}
 
+
+
+def opportunity_analysis(coin):
+    """Scanner-specific ranking for Best Opportunities.
+    It evaluates all loaded coins and tries to find realistic opportunities,
+    not only the highest raw setup score.
+    """
+    score = coin.get("score", 0)
+    ch1 = coin["1h"]
+    ch24 = coin["24h"]
+    ch7 = coin["7d"]
+    vr = coin["volume_ratio"]
+    mcap = coin["market_cap"]
+    proxy = coin["momentum_proxy"]
+    entry, _, _ = entry_quality(coin)
+    risk, _ = risk_level(coin)
+    ps, _, _ = profit_status(coin, fg)
+
+    opp = score
+    positives = []
+    negatives = []
+
+    if "Early" in entry:
+        opp += 14
+        positives.append("early entry timing")
+    elif "Wait" in entry:
+        opp -= 4
+        negatives.append("entry is not ideal yet")
+    elif "Too Late" in entry:
+        opp -= 28
+        negatives.append("already looks late / overheated")
+    else:
+        opp -= 12
+        negatives.append("weak buy timing")
+
+    if 0.5 <= ch24 <= 10:
+        opp += 10
+        positives.append("healthy 24h move")
+    elif ch24 > 12:
+        opp -= 26
+        negatives.append("24h pump is too high")
+    elif ch24 < -6:
+        opp -= 18
+        negatives.append("falling hard in 24h")
+
+    if 0 <= ch7 <= 30:
+        opp += 8
+        positives.append("healthy weekly trend")
+    elif ch7 > 35:
+        opp -= 18
+        negatives.append("weekly move may be overheated")
+    elif ch7 < -12:
+        opp -= 12
+        negatives.append("weekly trend is weak")
+
+    if vr > 0.08:
+        opp += 12
+        positives.append("strong trading volume")
+    elif vr > 0.03:
+        opp += 6
+        positives.append("normal trading activity")
+    else:
+        opp -= 18
+        negatives.append("low volume / weaker signal")
+
+    if mcap >= 500_000_000:
+        opp += 8
+        positives.append("good liquidity")
+    elif mcap < 100_000_000:
+        opp -= 15
+        negatives.append("small cap risk")
+
+    if 45 <= proxy <= 70:
+        opp += 8
+        positives.append("balanced momentum")
+    elif proxy > 78:
+        opp -= 15
+        negatives.append("momentum overheated")
+    elif proxy < 35:
+        opp -= 12
+        negatives.append("weak momentum")
+
+    if "High Risk" in risk:
+        opp -= 25
+        negatives.append("high risk setup")
+    elif "Elevated Risk" in risk:
+        opp -= 8
+        negatives.append("risk is elevated")
+
+    if "Take Profit" in ps or "Exit" in ps:
+        opp -= 16
+        negatives.append("exit/profit warning")
+
+    opp = round(max(0, min(100, opp)), 1)
+
+    if ch24 > 12 or ch7 > 35 or proxy > 78:
+        category = "💰 Already Pumped / Don’t Chase"
+        cat_color = "red"
+    elif "High Risk" in risk or (mcap < 100_000_000 and vr < 0.03):
+        category = "⚠️ Risky / Avoid"
+        cat_color = "red"
+    elif opp >= 75 and "Early" in entry:
+        category = "🔥 Best Opportunity"
+        cat_color = "green"
+    elif opp >= 55:
+        category = "👀 Watchlist Candidate"
+        cat_color = "yellow"
+    else:
+        category = "🚫 Low Priority"
+        cat_color = "red"
+
+    if not positives:
+        positives = ["no strong positive edge yet"]
+    if not negatives:
+        negatives = ["no major red flag"]
+
+    return {
+        "opportunity_score": opp,
+        "category": category,
+        "category_color": cat_color,
+        "positive_reasons": positives[:4],
+        "negative_reasons": negatives[:4],
+    }
+
 def plan_explanation(plan_key, action):
     if plan_key == "entry":
         if "AVOID" in action:
@@ -1458,6 +1582,8 @@ for coin in market_data:
     signal["exit_signal"], signal["exit_color"], signal["exit_reason"] = signal["profit_status"], signal["profit_color"], signal["profit_reason"]
     signal["action"], signal["action_color"], signal["action_reason"] = trade_action(signal, fg, btc_global)
     signal["plan"] = trade_plan(signal, signal["action"])
+    opp = opportunity_analysis(signal)
+    signal.update(opp)
 
     signals.append(signal)
 
@@ -1703,87 +1829,134 @@ with tab_coin:
 
 
 with tab_opps:
-    # ---------- PART 2: MARKET SCANNER ----------
+    # ---------- PART 2: REAL OPPORTUNITY SCANNER ----------
     st.divider()
-    st.subheader("🚀 Best Opportunities / Лучшие возможности")
-    st.caption("Part 2: separate scanner for the best setups across the loaded market. It uses Scanner Minimum Score filter.")
+    st.subheader("🚀 Best Opportunities / Лучшие варианты")
+    st.caption("Scanner checks all loaded coins and ranks realistic opportunities — not only raw setup score.")
 
-    if not filtered_signals:
-        st.warning("No coins match the selected scanner score. Lower Scanner Minimum Score to see market setups.")
-        rows = []
-    else:
-        st.subheader("🔥 Best Setup Now")
+    # Rank all loaded coins by Opportunity Score, not only by setup score.
+    opportunity_ranked = sorted(signals, key=lambda x: x["opportunity_score"], reverse=True)
+    clean_candidates = [s for s in opportunity_ranked if s["category"] in ["🔥 Best Opportunity", "👀 Watchlist Candidate"]]
+    pumped_candidates = [s for s in opportunity_ranked if "Already Pumped" in s["category"]]
+    risky_candidates = [s for s in opportunity_ranked if "Risky" in s["category"] or "Low Priority" in s["category"]]
 
-        b1, b2 = st.columns([3, 1])
+    best_opp = clean_candidates[0] if clean_candidates else opportunity_ranked[0]
 
-        with b1:
-            html(f"""
-    <div class="card">
-        <span class="badge {best["action_color"]}">{best["action"]}</span>
-        <h1>{best["symbol"]} — {best["coin"]}</h1>
-        <div class="price">{fmt(best["price"])} {currency.upper()}</div>
-        <div class="{'metric-positive' if best["24h"] >= 0 else 'metric-negative'}">24h: {best["24h"]:.2f}%</div>
-        <br>
-        <div class="small-muted">
-            Score: {best["score"]}/100 &nbsp;&nbsp;|&nbsp;&nbsp;
-            Entry: {best["entry_quality"]} &nbsp;&nbsp;|&nbsp;&nbsp;
-            Risk: {best["risk_level"]} &nbsp;&nbsp;|&nbsp;&nbsp;
-            Profit Status: {best["profit_status"]}
+    pos_html = "<br>".join([f"✅ {x}" for x in best_opp["positive_reasons"]])
+    neg_html = "<br>".join([f"⚠️ {x}" for x in best_opp["negative_reasons"]])
+
+    html(f"""
+    <div class="glass-card" style="margin-top:14px;">
+        <div style="display:flex; justify-content:space-between; gap:18px; align-items:flex-start; flex-wrap:wrap;">
+            <div>
+                <div class="compact-section-title" style="font-size:24px; margin-bottom:8px;">🏆 Best Opportunity Now</div>
+                <div class="small-muted">Best realistic setup found across <b>{len(signals)}</b> loaded coins.</div>
+            </div>
+            <span class="badge {best_opp['category_color']}" style="margin:0;">{best_opp['category']}</span>
         </div>
+
+        <div class="decision-top" style="grid-template-columns:minmax(260px,1fr) 170px; margin-top:18px;">
+            <div>
+                <div class="coin-title-small">{best_opp['symbol']} — {best_opp['coin']}</div>
+                <div class="price-main" style="margin-top:10px;">{fmt(best_opp['price'])} {currency.upper()}</div>
+                <div class="{'metric-positive' if best_opp['24h'] >= 0 else 'metric-negative'}">24h: {best_opp['24h']:.2f}%</div>
+            </div>
+            <div class="score-box" style="min-width:210px;">
+                <div class="score-box-label">🏆 Opportunity Score</div>
+                <div class="score-box-value" style="color:#86efac;">{best_opp['opportunity_score']}/100</div>
+                <div style="color:#cbd5e1; font-size:13px; line-height:1.35; margin-top:8px;">
+                    <b>Setup Quality:</b> {best_opp['score']}/100<br>
+                    <span style="color:#94a3b8;">How good this coin looks by itself.</span><br><br>
+                    <b>Market Ranking:</b> Best match now<br>
+                    <span style="color:#94a3b8;">Compared with other scanned coins.</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="score-intro-box" style="margin-top:10px; margin-bottom:12px;">
+            <b>Opportunity Score = Setup Quality + Market Ranking</b><br>
+            <span style="color:#cbd5e1;">Setup Quality shows whether this coin is strong by itself. Market Ranking shows whether it is better than other scanned coins right now.</span><br>
+            <span style="color:#aab4cf;">Opportunity Score = качество самой монеты + сравнение с другими монетами рынка.</span>
+        </div>
+
+        <div class="reason-mini-summary" style="grid-template-columns:repeat(2,1fr);">
+            <div class="reason-summary-box">
+                <div class="reason-summary-title">Why it is interesting / Почему интересно</div>
+                {pos_html}
+            </div>
+            <div class="reason-summary-box">
+                <div class="reason-summary-title">What can block it / Что мешает</div>
+                {neg_html}
+            </div>
+        </div>
+
         <div class="info-box">
-            {best["action_reason"]}
-        </div>
-        <br>
-        <div class="small-muted"><b>Trade Plan:</b><br>
-        Entry: {best["plan"]["entry"]}<br>
-        Stop: {best["plan"]["stop"]}<br>
-        First Profit Target: {best["plan"]["tp1"]}<br>
-        Second Profit Target: {best["plan"]["tp2"]}
+            <b>Action:</b> {best_opp['what_to_do']}<br>
+            <b>Entry:</b> {best_opp['entry_quality']} &nbsp; | &nbsp;
+            <b>Risk:</b> {best_opp['risk_level']} &nbsp; | &nbsp;
+            <b>Profit Status:</b> {best_opp['profit_status']}<br><br>
+            🇷🇺 Это не “точно покупать”. Это лучший setup среди загруженных монет по текущим данным: импульс, объём, ликвидность, риск и отсутствие сильного перегрева.
         </div>
     </div>
-            """)
+    """)
 
-        with b2:
-            if cat_orange.exists():
-                st.image(str(cat_orange), width=170)
-            else:
-                st.markdown("🐈")
+    # Category overview
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("🔥 Best/Watch candidates", len(clean_candidates))
+    c2.metric("💰 Already pumped", len(pumped_candidates))
+    c3.metric("⚠️ Risky / low priority", len(risky_candidates))
+    c4.metric("🌍 Coins scanned", len(signals))
 
-        # ---------- TOP SETUPS TABLE ----------
-        st.subheader("🏆 Top Setups")
+    st.subheader("🔎 Opportunity Scanner Results")
+    st.caption("Sorted by Opportunity Score. The scanner still shows all loaded coins, but separates good setups from risky/pumped coins.")
 
-        rows = []
-
-        for s in top10:
-            rows.append({
-                "Coin": f"{s['symbol']} — {s['coin']}",
-                "Price": f"{fmt(s['price'])} {currency.upper()}",
-                "1h %": round(s["1h"], 2),
-                "24h %": round(s["24h"], 2),
-                "7d %": round(s["7d"], 2),
-                "Vol/MCap": f"{s['volume_ratio']:.2%}",
-                "Momentum": s["momentum_proxy"],
-                "Score": s["score"],
-                "Action": s["action"],
-                "Entry": s["entry_quality"].replace("Wait For Better Entry", "Wait").replace("Bad Timing", "Bad"),
-                "Risk": s["risk_level"],
-                "Exit": s["exit_signal"]
-            })
-
-    st.dataframe(
-        pd.DataFrame(rows),
-        use_container_width=True,
-        hide_index=True
+    show_group = st.selectbox(
+        "Show group",
+        ["Best + Watchlist", "All coins", "Already pumped", "Risky / Low priority"],
+        index=0
     )
 
-    # ---------- DOWNLOAD ----------
+    if show_group == "Best + Watchlist":
+        table_source = clean_candidates
+    elif show_group == "Already pumped":
+        table_source = pumped_candidates
+    elif show_group == "Risky / Low priority":
+        table_source = risky_candidates
+    else:
+        table_source = opportunity_ranked
+
+    # Optional table threshold: applies only to visible table, not to best-opportunity ranking.
+    table_source = [s for s in table_source if s["opportunity_score"] >= min_score_filter]
+
+    rows = []
+    for s in table_source[:50]:
+        rows.append({
+            "Coin": f"{s['symbol']} — {s['coin']}",
+            "Price": f"{fmt(s['price'])} {currency.upper()}",
+            "Opportunity": s["opportunity_score"],
+            "Setup": s["score"],
+            "Category": s["category"],
+            "1h %": round(s["1h"], 2),
+            "24h %": round(s["24h"], 2),
+            "7d %": round(s["7d"], 2),
+            "Vol/MCap": f"{s['volume_ratio']:.2%}",
+            "Entry": s["entry_quality"].replace("Wait For Better Entry", "Wait").replace("Bad Timing", "Bad"),
+            "Risk": s["risk_level"],
+            "Action": s["what_to_do"],
+        })
+
+    if not rows:
+        st.warning("No coins in this group match the current Minimum Score filter. Lower Minimum Score or choose another group.")
+    else:
+        st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+
     csv_df = pd.DataFrame(rows)
     csv = csv_df.to_csv(index=False).encode("utf-8")
 
     st.download_button(
-        label="📥 Download Scanner Results CSV",
+        label="📥 Download Opportunity Scanner CSV",
         data=csv,
-        file_name="koshka_top_setups.csv",
+        file_name="koshka_opportunity_scanner.csv",
         mime="text/csv"
     )
 
