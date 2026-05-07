@@ -172,10 +172,11 @@ h3 { font-size: 1.05rem !important; }
 }
 
 .reason-row {
-    padding: 7px 0;
+    padding: 6px 0;
     border-bottom: 1px solid rgba(255,255,255,0.06);
     color: #b0b8d1;
-    font-size: 16px;
+    font-size: 14px;
+    line-height:1.35;
 }
 
 .reason-label {
@@ -282,75 +283,188 @@ h3 { font-size: 1.05rem !important; }
 .glass-card {
     background: linear-gradient(145deg, rgba(17,24,39,0.98), rgba(31,42,68,0.96));
     border: 1px solid rgba(148,163,184,0.18);
-    border-radius: 24px;
-    padding: 24px;
-    box-shadow: 0 18px 55px rgba(0,0,0,0.28);
+    border-radius: 22px;
+    padding: 18px;
+    box-shadow: 0 14px 40px rgba(0,0,0,0.24);
     color: white;
 }
 .coin-card-main {
-    min-height: 520px;
+    min-height: auto;
 }
 .coin-head-row {
     display:flex;
     justify-content:space-between;
-    align-items:flex-start;
-    gap:16px;
-    margin-bottom: 26px;
+    align-items:center;
+    gap:14px;
+    margin-bottom: 14px;
 }
 .coin-symbol-round {
-    width:58px;
-    height:58px;
-    border-radius:18px;
+    width:50px;
+    height:50px;
+    border-radius:16px;
     display:flex;
     align-items:center;
     justify-content:center;
     background: radial-gradient(circle at 30% 30%, #ffcc66, #f97316 70%);
-    font-size:30px;
+    font-size:27px;
     font-weight:900;
-    box-shadow: 0 10px 30px rgba(249,115,22,0.25);
+    box-shadow: 0 8px 22px rgba(249,115,22,0.22);
 }
 .coin-title-small {
     color:white;
-    font-size:32px;
+    font-size:28px;
     font-weight:900;
-    line-height:1.05;
+    line-height:1.0;
 }
 .coin-subtitle-small {
     color:#aab4cf;
-    font-size:16px;
-    margin-top:8px;
+    font-size:14px;
+    margin-top:5px;
+}
+.price-line {
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:14px;
+    margin: 6px 0 14px 0;
 }
 .price-main {
-    font-size:34px;
+    font-size:30px;
     font-weight:900;
     letter-spacing:-0.03em;
     color:white;
-    margin-bottom:8px;
+    margin-bottom:0;
 }
 .metric-grid {
     display:grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap:12px;
-    margin-top:24px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap:8px;
+    margin-top:12px;
 }
+@media (max-width: 1200px) { .metric-grid { grid-template-columns: repeat(2, 1fr); } }
 .metric-tile {
     background: rgba(15,23,42,0.62);
     border: 1px solid rgba(148,163,184,0.16);
-    border-radius:16px;
-    padding:15px;
-    min-height:92px;
+    border-radius:13px;
+    padding:10px 12px;
+    min-height:70px;
 }
-.metric-tile-wide { grid-column: span 2; }
+.metric-tile-wide { grid-column: span 1; }
 .metric-title-mini {
     color:#aab4cf;
-    font-size:14px;
-    margin-bottom:8px;
+    font-size:12px;
+    margin-bottom:5px;
+    line-height:1.2;
 }
 .metric-value-mini {
     color:white;
-    font-size:20px;
+    font-size:17px;
     font-weight:850;
 }
+.metric-helper-mini {
+    color:#7f8aa8;
+    font-size:10.5px;
+    margin-top:3px;
+    line-height:1.2;
+}
+.metric-status-mini {
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    margin-top:7px;
+    padding:5px 9px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:850;
+    line-height:1.15;
+}
+.metric-status-green { background:rgba(22,101,52,0.34); color:#86efac; }
+.metric-status-yellow { background:rgba(113,63,18,0.38); color:#fde68a; }
+.metric-status-red { background:rgba(127,29,29,0.38); color:#fca5a5; }
+.score-breakdown-head {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    margin-bottom:12px;
+}
+.score-chip {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:999px;
+    padding:8px 14px;
+    font-size:15px;
+    font-weight:950;
+    background:rgba(127,29,29,0.30);
+    color:#fca5a5;
+    border:1px solid rgba(248,113,113,0.35);
+    white-space:nowrap;
+}
+.reason-mini-summary {
+    display:grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap:8px;
+    margin:8px 0 10px 0;
+}
+@media (max-width: 760px) { .reason-mini-summary { grid-template-columns:1fr; } }
+.reason-summary-box {
+    background: rgba(15,23,42,0.45);
+    border:1px solid rgba(148,163,184,0.14);
+    border-radius:13px;
+    padding:10px 12px;
+    color:#cbd5e1;
+    font-size:12.5px;
+    line-height:1.35;
+}
+.reason-summary-title {
+    color:white;
+    font-size:13px;
+    font-weight:900;
+    margin-bottom:6px;
+}
+.reason-details-title {
+    color:#aab4cf;
+    font-size:13px;
+    font-weight:850;
+    margin:10px 0 6px 0;
+}
+.score-intro-box {
+    background: rgba(99,102,241,0.10);
+    border:1px solid rgba(99,102,241,0.28);
+    border-radius:13px;
+    padding:10px 12px;
+    color:#cbd5e1;
+    font-size:12.5px;
+    line-height:1.45;
+    margin-bottom:10px;
+}
+.factor-row {
+    display:grid;
+    grid-template-columns: 78px 1fr;
+    gap:10px;
+    padding:9px 0;
+    border-bottom:1px solid rgba(255,255,255,0.06);
+}
+.factor-row:last-child { border-bottom:0; }
+.factor-impact {
+    align-self:start;
+    display:inline-flex;
+    justify-content:center;
+    align-items:center;
+    border-radius:999px;
+    padding:5px 8px;
+    font-size:11px;
+    font-weight:950;
+    white-space:nowrap;
+}
+.factor-impact.positive { background:rgba(22,101,52,0.45); color:#86efac; }
+.factor-impact.negative { background:rgba(127,29,29,0.45); color:#fca5a5; }
+.factor-impact.neutral { background:rgba(113,63,18,0.45); color:#fde68a; }
+.factor-title { color:white; font-weight:900; font-size:14px; margin-bottom:3px; }
+.factor-desc { color:#aab4cf; font-size:12.5px; line-height:1.4; }
+.factor-plain { color:#cbd5e1; font-size:12px; margin-top:3px; line-height:1.35; }
+
 .positive-text { color:#4ade80 !important; }
 .negative-text { color:#f87171 !important; }
 .decision-top {
@@ -481,6 +595,78 @@ h3 { font-size: 1.05rem !important; }
     margin-top:18px;
 }
 
+/* ---------- CLEAR SECTIONS + VISIBLE CONTROLS ---------- */
+.controls-panel {
+    background: rgba(15,23,42,0.58);
+    border: 1px solid rgba(99,102,241,0.34);
+    border-radius: 16px;
+    padding: 12px 16px;
+    margin: 10px 0 12px 0;
+    box-shadow: 0 10px 28px rgba(0,0,0,0.16);
+}
+.controls-title {
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+}
+.controls-subtitle {
+    color: #aab4cf;
+    font-size: 13px;
+    margin-top: 3px;
+}
+.section-marker {
+    background: linear-gradient(135deg, rgba(15,23,42,0.72), rgba(30,41,59,0.68));
+    border: 1px solid rgba(148,163,184,0.20);
+    border-left: 4px solid #818cf8;
+    border-radius: 16px;
+    padding: 12px 16px;
+    margin: 12px 0 10px 0;
+}
+.section-marker-title {
+    color: white;
+    font-size: 18px;
+    font-weight: 900;
+}
+.section-marker-sub {
+    color: #aab4cf;
+    font-size: 13px;
+    margin-top: 3px;
+}
+.selected-coin-banner {
+    background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(59,130,246,0.12));
+    border: 1px solid rgba(16,185,129,0.36);
+    border-radius: 18px;
+    padding: 14px 18px;
+    margin: 12px 0 18px 0;
+    color: #dbeafe;
+}
+.selected-coin-banner b { color: white; }
+[data-testid="stSelectbox"] {
+    background: rgba(15,23,42,0.42);
+    border: 1px solid rgba(148,163,184,0.18);
+    border-radius: 14px;
+    padding: 6px 10px 8px 10px;
+}
+[data-testid="stSelectbox"] label p {
+    font-size: 14px !important;
+    font-weight: 800 !important;
+}
+[data-baseweb="select"] > div {
+    min-height: 42px !important;
+}
+[data-testid="stSlider"] {
+    background: rgba(15,23,42,0.42);
+    border: 1px solid rgba(148,163,184,0.18);
+    border-radius: 16px;
+    padding: 10px 14px 12px 14px;
+}
+button[data-baseweb="tab"] {
+    font-weight: 850;
+    font-size: 16px;
+}
+
+
 </style>
 """)
 
@@ -547,17 +733,59 @@ REASON_EXPLAIN = {
     ),
 }
 
+def factor_impact(reason):
+    low = reason.lower()
+    negative_keys = ["weak", "overheated", "pumped", "overextended", "falling", "no strong"]
+    positive_keys = ["early", "healthy", "strong", "normal", "good"]
+
+    if any(k in low for k in negative_keys):
+        return "negative", "- score", "Понижает score"
+    if any(k in low for k in positive_keys):
+        return "positive", "+ score", "Повышает score"
+    return "neutral", "info", "Контекст"
+
 def explain_reasons(reasons):
     rows = []
     for r in reasons:
         label, desc = REASON_EXPLAIN.get(r, (r, ""))
+        impact_class, impact_en, impact_ru = factor_impact(r)
         rows.append(f"""
-        <div class="reason-row">
-            <span class="reason-label">{label}</span><br>
-            <span style="font-size:14px;">{desc}</span>
+        <div class="factor-row">
+            <div class="factor-impact {impact_class}">{impact_en}</div>
+            <div>
+                <div class="factor-title">{label}</div>
+                <div class="factor-desc">{desc}</div>
+                <div class="factor-plain"><b>{impact_ru}</b> — этот фактор является одним из основных сигналов, которые сработали сейчас.</div>
+            </div>
         </div>
         """)
     return "".join(rows)
+
+
+def score_reason_summary(reasons):
+    positive_keys = ["early", "healthy", "strong", "normal", "good"]
+    negative_keys = ["weak", "overheated", "pumped", "overextended", "falling", "no strong"]
+
+    positives = []
+    negatives = []
+
+    for r in reasons:
+        label, _ = REASON_EXPLAIN.get(r, (r, ""))
+        clean = label.replace("⚠️", "").replace("⛔", "").strip()
+        low = r.lower()
+        if any(k in low for k in negative_keys):
+            negatives.append(clean)
+        elif any(k in low for k in positive_keys):
+            positives.append(clean)
+
+    if not positives:
+        positives = ["no clear positive signal / нет явного сильного плюса"]
+    if not negatives:
+        negatives = ["no major red flag / нет сильного красного флага"]
+
+    pos_html = "<br>".join([f"✅ {p}" for p in positives[:3]])
+    neg_html = "<br>".join([f"⚠️ {n}" for n in negatives[:3]])
+    return pos_html, neg_html
 
 # ---------- HEADER ----------
 h1, h2 = st.columns([1, 5])
@@ -580,53 +808,64 @@ with h2:
 
 # ---------- PAGE TABS ----------
 tab_coin, tab_opps, tab_market = st.tabs([
-    "🧠 Selected Coin",
+    "🔍 Coin Analysis",
     "🚀 Best Opportunities",
     "🌐 Market Overview"
 ])
 
-# Settings are shown inside the Best Opportunities tab, but they control the whole app.
-with tab_opps:
+# ---------- TAB-SPECIFIC CONTROLS ----------
+# Selected Coin only needs settings that affect the chosen coin analysis.
+with tab_coin:
     html("""
-    <div class="settings-box">
-        <h2>⚙️ Scanner Settings</h2>
-        <div class="small-muted" style="margin-top:8px;">
-            These settings control loaded coins and scanner results. Selected Coin tab uses the same loaded market list.
-        </div>
+    <div class="controls-panel">
+        <div class="controls-title">⚙️ Settings</div>
+        <div class="controls-subtitle">Currency and risk mode affect the coin analysis, score, targets and risk interpretation.</div>
     </div>
     """)
 
-    s1, s2, s3, s4 = st.columns(4)
-
-    with s1:
+    c1, c2 = st.columns(2)
+    with c1:
         currency = st.selectbox(
             "💱 Currency",
             ["usd", "aed", "eur", "gbp", "rub"],
-            index=1
+            index=1,
+            help="All prices and action-plan targets will use this currency."
         )
 
-    with s2:
+    with c2:
         risk_mode = st.selectbox(
             "⚠️ Risk Mode",
             ["Conservative", "Average", "Aggressive"],
-            index=1
+            index=1,
+            help="Affects selected coin score and scanner logic. Conservative is stricter; Aggressive accepts more volatility."
         )
 
-    with s3:
+# Best Opportunities needs scanner-only controls.
+with tab_opps:
+    html("""
+    <div class="controls-panel">
+        <div class="controls-title">⚙️ Settings</div>
+        <div class="controls-subtitle">Scanner size and minimum score control the Best Opportunities table.</div>
+    </div>
+    """)
+
+    s1, s2 = st.columns(2)
+    with s1:
         scan_size = st.selectbox(
             "🌍 Coins To Scan",
             [100, 250, 500, 750],
-            index=1
+            index=1,
+            help="How many top market-cap coins to load from the market API."
         )
 
-    with s4:
+    with s2:
         min_score_filter = st.slider(
-            "Scanner Minimum Score",
+            "Minimum Score",
             min_value=0,
             max_value=100,
             value=50,
             step=5,
-            help="This filter affects only Best Setup / Top Setups scanner. Coin analysis dropdown still shows all loaded coins."
+            help="Only Best Opportunities scanner is filtered. Selected Coin still shows all loaded coins."
         )
 
 # ---------- MACRO APIs ----------
@@ -1089,6 +1328,67 @@ def trade_plan(coin, action):
         "note_en": note_en
     }
 
+
+def factor_interpretations(coin):
+    """Human-readable interpretation for the raw metric cards.
+    This answers: is each number good, neutral, or bad?
+    """
+    ch1 = coin["1h"]
+    ch7 = coin["7d"]
+    mcap = coin["market_cap"]
+    vr = coin["volume_ratio"]
+    proxy = coin["momentum_proxy"]
+
+    # 1h movement
+    if 0.3 <= ch1 <= 2.5:
+        h1 = ("metric-status-green", "🟢 Good", "healthy early momentum / хороший ранний импульс")
+    elif ch1 > 5:
+        h1 = ("metric-status-red", "🔴 Risk", "too sharp, may pull back / слишком резкий скачок")
+    elif ch1 > 2.5:
+        h1 = ("metric-status-yellow", "🟡 Watch", "moving fast, wait confirmation / быстро растёт, жди подтверждение")
+    elif ch1 < -1:
+        h1 = ("metric-status-red", "🔴 Weak", "short-term pressure / краткосрочное давление")
+    else:
+        h1 = ("metric-status-yellow", "🟡 Neutral", "no strong short-term move / нет сильного движения")
+
+    # 7d movement
+    if ch7 > 35:
+        d7 = ("metric-status-red", "🔴 Overheated", "weekly move too hot / неделя перегрета")
+    elif 0 <= ch7 <= 30:
+        d7 = ("metric-status-green", "🟢 Healthy", "weekly trend is OK / недельный тренд нормальный")
+    elif ch7 < -10:
+        d7 = ("metric-status-red", "🔴 Weak", "weekly trend is falling / недельный тренд падает")
+    else:
+        d7 = ("metric-status-yellow", "🟡 Mixed", "trend is not clear / тренд неясный")
+
+    # Market cap / size
+    if mcap >= 500_000_000:
+        mcap_i = ("metric-status-green", "🟢 Safer", "large liquid coin / крупная ликвидная монета")
+    elif mcap >= 100_000_000:
+        mcap_i = ("metric-status-yellow", "🟡 Mid cap", "medium risk size / средний риск по размеру")
+    else:
+        mcap_i = ("metric-status-red", "🔴 Small cap", "higher manipulation risk / выше риск манипуляций")
+
+    # Volume ratio / activity
+    if vr > 0.08:
+        vol = ("metric-status-green", "🟢 Strong", "strong trader interest / сильный интерес трейдеров")
+    elif vr > 0.03:
+        vol = ("metric-status-yellow", "🟡 Normal", "normal activity / обычная активность")
+    else:
+        vol = ("metric-status-red", "🔴 Low", "low activity, weaker signal / мало торгов, слабее сигнал")
+
+    # Momentum proxy
+    if 45 <= proxy <= 70:
+        mom = ("metric-status-green", "🟢 Balanced", "healthy momentum zone / здоровая зона импульса")
+    elif proxy > 78:
+        mom = ("metric-status-red", "🔴 Hot", "overheated momentum / импульс перегрет")
+    elif proxy < 35:
+        mom = ("metric-status-red", "🔴 Weak", "momentum is weak / слабый импульс")
+    else:
+        mom = ("metric-status-yellow", "🟡 Mixed", "not ideal yet / пока не идеально")
+
+    return {"h1": h1, "d7": d7, "mcap": mcap_i, "vol": vol, "mom": mom}
+
 def plan_explanation(plan_key, action):
     if plan_key == "entry":
         if "AVOID" in action:
@@ -1177,20 +1477,40 @@ with tab_coin:
     if "coin_selector" in st.session_state and st.session_state["coin_selector"] not in coin_options:
         st.session_state["coin_selector"] = default_coin_id
 
+    html("""
+    <div class="section-marker">
+        <div class="section-marker-title">🔎 Choose coin to analyse</div>
+        <div class="section-marker-sub">Pick the coin you want the app to evaluate.</div>
+    </div>
+    """)
+
     selected_coin_id = st.selectbox(
-        "Choose coin / Выбери монету",
+        "Coin to analyse",
         coin_ids,
         index=coin_ids.index(st.session_state.get("coin_selector", default_coin_id)),
         format_func=lambda coin_id:
             f"{coin_options[coin_id]['symbol']} — {coin_options[coin_id]['coin']}",
-        key="coin_selector"
+        key="coin_selector",
+        help="Pick any coin from the loaded market list."
     )
 
     selected = coin_options[selected_coin_id]
+    html(f"""
+    <div class="selected-coin-banner">
+        🔍 Analysing: <b>{selected['symbol']} — {selected['coin']}</b> &nbsp; | &nbsp; <b>{currency.upper()}</b> &nbsp; | &nbsp; Risk: <b>{risk_mode}</b>
+    </div>
+    """)
     plan = selected["plan"]
+    positive_reasons_html, negative_reasons_html = score_reason_summary(selected["reasons"])
     metric_class = "positive-text" if selected["24h"] >= 0 else "negative-text"
     h1_class = "positive-text" if selected["1h"] >= 0 else "negative-text"
     d7_class = "positive-text" if selected["7d"] >= 0 else "negative-text"
+    factor_view = factor_interpretations(selected)
+    h1_status_class, h1_status_label, h1_status_desc = factor_view["h1"]
+    d7_status_class, d7_status_label, d7_status_desc = factor_view["d7"]
+    mcap_status_class, mcap_status_label, mcap_status_desc = factor_view["mcap"]
+    vol_status_class, vol_status_label, vol_status_desc = factor_view["vol"]
+    mom_status_class, mom_status_label, mom_status_desc = factor_view["mom"]
     coin_icon = "₿" if selected["symbol"] == "BTC" else selected["symbol"][:1]
 
     is_small_cap = selected["market_cap"] < 500_000_000
@@ -1218,36 +1538,67 @@ with tab_coin:
                     <span class="badge {selected["what_color"]}" style="margin:0; font-size:13px; padding:8px 12px;">Watchlist</span>
                 </div>
 
-                <div class="price-main">{fmt(selected["price"])} {currency.upper()}</div>
-                <div class="{metric_class}" style="font-size:20px; font-weight:900;">24h: {selected["24h"]:.2f}%</div>
+                <div class="price-line">
+                    <div class="price-main">{fmt(selected["price"])} {currency.upper()}</div>
+                    <div class="{metric_class}" style="font-size:16px; font-weight:900; white-space:nowrap;">24h: {selected["24h"]:.2f}%</div>
+                </div>
 
                 <div class="metric-grid">
                     <div class="metric-tile">
-                        <div class="metric-title-mini">1h Change</div>
+                        <div class="metric-title-mini">1h Move / за час</div>
                         <div class="metric-value-mini {h1_class}">{selected["1h"]:.2f}%</div>
+                        <div class="metric-status-mini {h1_status_class}">{h1_status_label}</div>
+                        <div class="metric-helper-mini">{h1_status_desc}</div>
                     </div>
                     <div class="metric-tile">
-                        <div class="metric-title-mini">7d Change</div>
+                        <div class="metric-title-mini">7d Move / за неделю</div>
                         <div class="metric-value-mini {d7_class}">{selected["7d"]:.2f}%</div>
+                        <div class="metric-status-mini {d7_status_class}">{d7_status_label}</div>
+                        <div class="metric-helper-mini">{d7_status_desc}</div>
                     </div>
                     <div class="metric-tile">
-                        <div class="metric-title-mini">Market Cap</div>
+                        <div class="metric-title-mini">Market Cap / размер</div>
                         <div class="metric-value-mini">{fmt(selected["market_cap"])}</div>
+                        <div class="metric-status-mini {mcap_status_class}">{mcap_status_label}</div>
+                        <div class="metric-helper-mini">{mcap_status_desc}</div>
                     </div>
                     <div class="metric-tile">
-                        <div class="metric-title-mini">Volume Ratio</div>
+                        <div class="metric-title-mini">Volume / интерес</div>
                         <div class="metric-value-mini">{selected["volume_ratio"]:.2%}</div>
+                        <div class="metric-status-mini {vol_status_class}">{vol_status_label}</div>
+                        <div class="metric-helper-mini">{vol_status_desc}</div>
                     </div>
                     <div class="metric-tile metric-tile-wide">
-                        <div class="metric-title-mini">Momentum Proxy</div>
+                        <div class="metric-title-mini">Momentum / импульс</div>
                         <div class="metric-value-mini">{selected["momentum_proxy"]}/100</div>
+                        <div class="metric-status-mini {mom_status_class}">{mom_status_label}</div>
+                        <div class="metric-helper-mini">{mom_status_desc}</div>
                     </div>
                 </div>
                 {small_cap_warning}
             </div>
 
             <div class="glass-card reasons-card">
-                <div class="compact-section-title">🧠 Why this score? / Почему такой скор?</div>
+                <div class="score-breakdown-head">
+                    <div class="compact-section-title" style="margin-bottom:0;">🧮 What Affected The Score / Что повлияло на оценку</div>
+                    <div class="score-chip">{selected["score"]}/100</div>
+                </div>
+                <div class="score-intro-box">
+                    <b>AI checks multiple signals:</b> momentum, 24h/7d movement, volume, liquidity, overheating, market cap, risk mode and market conditions.<br>
+                    <b>AI анализирует несколько сигналов:</b> импульс, движение за 24ч/7д, объём, ликвидность, перегрев, размер монеты, risk mode и состояние рынка.<br><br>
+                    Below are the <b>main factors that affected this score right now</b> / Ниже — <b>главные факторы, которые повлияли на текущий score</b>.
+                </div>
+                <div class="reason-mini-summary">
+                    <div class="reason-summary-box">
+                        <div class="reason-summary-title">✅ Positive signals (+score) / Плюсы</div>
+                        {positive_reasons_html}
+                    </div>
+                    <div class="reason-summary-box">
+                        <div class="reason-summary-title">⚠️ Negative signals (-score) / Минусы</div>
+                        {negative_reasons_html}
+                    </div>
+                </div>
+                <div class="reason-details-title">Main triggered factors / Главные сработавшие факторы</div>
                 {explain_reasons(selected["reasons"])}
             </div>
         </div>
