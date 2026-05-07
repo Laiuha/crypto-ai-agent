@@ -38,52 +38,61 @@ html("""
     #0b1020;
 }
 
+
+
+h1 { font-size: 1.7rem !important; }
+h2 { font-size: 1.35rem !important; }
+h3 { font-size: 1.05rem !important; }
+[data-testid="stMarkdownContainer"] h1 { font-size: 1.7rem !important; }
+[data-testid="stMarkdownContainer"] h2 { font-size: 1.35rem !important; }
+[data-testid="stMarkdownContainer"] h3 { font-size: 1.05rem !important; }
+
 .hero, .card, .settings-box, .macro-box {
     background: linear-gradient(135deg,#182035,#25314f);
-    border-radius: 28px;
-    padding: 28px;
+    border-radius: 22px;
+    padding: 22px;
     margin-bottom: 20px;
 }
 
 .big-title {
-    font-size: 56px;
+    font-size: 40px;
     font-weight: 900;
     color: white;
 }
 
 .subtitle {
     color: #b0b8d1;
-    font-size: 20px;
+    font-size: 16px;
     margin-top: 14px;
 }
 
 .coin-title {
-    font-size: 52px;
+    font-size: 38px;
     font-weight: 900;
     color: white;
 }
 
 .coin-name {
-    font-size: 24px;
+    font-size: 18px;
     color: #c7d2fe;
     margin-bottom: 22px;
 }
 
 .price {
-    font-size: 48px;
+    font-size: 34px;
     font-weight: 900;
     color: white;
 }
 
 .metric-positive {
     color: #4ade80;
-    font-size: 24px;
+    font-size: 18px;
     font-weight: 700;
 }
 
 .metric-negative {
     color: #f87171;
-    font-size: 24px;
+    font-size: 18px;
     font-weight: 700;
 }
 
@@ -93,7 +102,7 @@ html("""
 }
 
 .macro-value {
-    font-size: 42px;
+    font-size: 32px;
     font-weight: 900;
     color: white;
     margin: 8px 0;
@@ -213,7 +222,7 @@ html("""
 
 .clean-macro-value {
     color: white;
-    font-size: 44px;
+    font-size: 34px;
     font-weight: 900;
     line-height: 1.05;
     margin-bottom: 12px;
@@ -256,6 +265,220 @@ html("""
     border-radius: 18px;
     padding: 18px;
     color: white;
+}
+
+
+/* ---------- POLISHED DASHBOARD LAYOUT ---------- */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: minmax(360px, 0.9fr) minmax(520px, 1.1fr);
+    gap: 22px;
+    align-items: stretch;
+    margin-top: 14px;
+}
+@media (max-width: 1000px) {
+    .dashboard-grid { grid-template-columns: 1fr; }
+}
+.glass-card {
+    background: linear-gradient(145deg, rgba(17,24,39,0.98), rgba(31,42,68,0.96));
+    border: 1px solid rgba(148,163,184,0.18);
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: 0 18px 55px rgba(0,0,0,0.28);
+    color: white;
+}
+.coin-card-main {
+    min-height: 520px;
+}
+.coin-head-row {
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:16px;
+    margin-bottom: 26px;
+}
+.coin-symbol-round {
+    width:58px;
+    height:58px;
+    border-radius:18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background: radial-gradient(circle at 30% 30%, #ffcc66, #f97316 70%);
+    font-size:30px;
+    font-weight:900;
+    box-shadow: 0 10px 30px rgba(249,115,22,0.25);
+}
+.coin-title-small {
+    color:white;
+    font-size:32px;
+    font-weight:900;
+    line-height:1.05;
+}
+.coin-subtitle-small {
+    color:#aab4cf;
+    font-size:16px;
+    margin-top:8px;
+}
+.price-main {
+    font-size:34px;
+    font-weight:900;
+    letter-spacing:-0.03em;
+    color:white;
+    margin-bottom:8px;
+}
+.metric-grid {
+    display:grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap:12px;
+    margin-top:24px;
+}
+.metric-tile {
+    background: rgba(15,23,42,0.62);
+    border: 1px solid rgba(148,163,184,0.16);
+    border-radius:16px;
+    padding:15px;
+    min-height:92px;
+}
+.metric-tile-wide { grid-column: span 2; }
+.metric-title-mini {
+    color:#aab4cf;
+    font-size:14px;
+    margin-bottom:8px;
+}
+.metric-value-mini {
+    color:white;
+    font-size:20px;
+    font-weight:850;
+}
+.positive-text { color:#4ade80 !important; }
+.negative-text { color:#f87171 !important; }
+.decision-top {
+    display:grid;
+    grid-template-columns: minmax(220px, auto) 150px;
+    gap:16px;
+    align-items:center;
+    margin:18px 0 20px 0;
+}
+@media (max-width: 720px) { .decision-top { grid-template-columns: 1fr; } }
+.big-decision-badge {
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+    border-radius:999px;
+    padding:20px 26px;
+    font-size:28px;
+    font-weight:950;
+    text-transform:uppercase;
+    letter-spacing:-0.02em;
+}
+.score-box {
+    background: rgba(15,23,42,0.62);
+    border: 1px solid rgba(148,163,184,0.18);
+    border-radius:16px;
+    padding:16px;
+}
+.score-box-label { color:#cbd5e1; font-size:14px; }
+.score-box-value { color:#f87171; font-size:28px; font-weight:950; }
+.alert-summary {
+    display:flex;
+    gap:14px;
+    align-items:center;
+    background: rgba(127,29,29,0.16);
+    border:1px solid rgba(248,113,113,0.42);
+    border-radius:16px;
+    padding:15px 18px;
+    color:#e5e7eb;
+    margin-bottom:22px;
+}
+.alert-icon {
+    width:34px;
+    height:34px;
+    flex:0 0 34px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#ef4444;
+    color:white;
+    font-weight:900;
+}
+.decision-row {
+    display:grid;
+    grid-template-columns: 1fr auto;
+    gap:18px;
+    align-items:center;
+    padding:16px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.09);
+}
+.decision-row:last-child { border-bottom:0; }
+.decision-label-wrap {
+    display:flex;
+    gap:14px;
+    align-items:center;
+}
+.decision-icon {
+    width:42px;
+    height:42px;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background: rgba(99,102,241,0.14);
+    border:1px solid rgba(99,102,241,0.30);
+    font-size:22px;
+}
+.decision-title { color:white; font-weight:850; font-size:17px; }
+.decision-sub { color:#aab4cf; font-size:14px; margin-top:3px; }
+.pill-mini {
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    border-radius:16px;
+    padding:12px 16px;
+    font-size:15px;
+    font-weight:900;
+    min-width:185px;
+    justify-content:center;
+}
+.plan-grid-modern {
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap:10px;
+    margin-top:14px;
+}
+@media (max-width: 900px) { .plan-grid-modern { grid-template-columns: repeat(2, 1fr); } }
+.plan-tile {
+    background: rgba(15,23,42,0.62);
+    border: 1px solid rgba(148,163,184,0.18);
+    border-radius:14px;
+    padding:14px 12px;
+    text-align:center;
+    min-height:105px;
+}
+.plan-title { font-size:15px; font-weight:950; margin-bottom:8px; }
+.plan-value { color:white; font-size:15px; font-weight:800; line-height:1.35; }
+.plan-desc {
+    color:#aab4cf;
+    font-size:12.5px;
+    line-height:1.45;
+    margin-top:10px;
+    text-align:left;
+}
+.plan-desc b { color:#dbeafe; }
+.plan-tile { display:flex; flex-direction:column; justify-content:flex-start; }
+.border-blue { border-color: rgba(59,130,246,0.55); }
+.border-red { border-color: rgba(248,113,113,0.55); }
+.border-green { border-color: rgba(74,222,128,0.45); }
+.compact-section-title {
+    color:white;
+    font-size:20px;
+    font-weight:900;
+    margin-bottom:12px;
+}
+.reasons-card {
+    margin-top:18px;
 }
 
 </style>
@@ -341,7 +564,7 @@ h1, h2 = st.columns([1, 5])
 
 with h1:
     if cat_black.exists():
-        st.image(str(cat_black), width=170)
+        st.image(str(cat_black), width=120)
     else:
         st.markdown("🐈")
 
@@ -355,45 +578,56 @@ with h2:
     </div>
     """)
 
-# ---------- SETTINGS ----------
-html("""
-<div class="settings-box">
-    <h2>⚙️ Scanner Settings</h2>
-</div>
-""")
+# ---------- PAGE TABS ----------
+tab_coin, tab_opps, tab_market = st.tabs([
+    "🧠 Selected Coin",
+    "🚀 Best Opportunities",
+    "🌐 Market Overview"
+])
 
-s1, s2, s3, s4 = st.columns(4)
+# Settings are shown inside the Best Opportunities tab, but they control the whole app.
+with tab_opps:
+    html("""
+    <div class="settings-box">
+        <h2>⚙️ Scanner Settings</h2>
+        <div class="small-muted" style="margin-top:8px;">
+            These settings control loaded coins and scanner results. Selected Coin tab uses the same loaded market list.
+        </div>
+    </div>
+    """)
 
-with s1:
-    currency = st.selectbox(
-        "💱 Currency",
-        ["usd", "aed", "eur", "gbp", "rub"],
-        index=1
-    )
+    s1, s2, s3, s4 = st.columns(4)
 
-with s2:
-    risk_mode = st.selectbox(
-        "⚠️ Risk Mode",
-        ["Conservative", "Average", "Aggressive"],
-        index=1
-    )
+    with s1:
+        currency = st.selectbox(
+            "💱 Currency",
+            ["usd", "aed", "eur", "gbp", "rub"],
+            index=1
+        )
 
-with s3:
-    scan_size = st.selectbox(
-        "🌍 Coins To Scan",
-        [100, 250, 500, 750],
-        index=1
-    )
+    with s2:
+        risk_mode = st.selectbox(
+            "⚠️ Risk Mode",
+            ["Conservative", "Average", "Aggressive"],
+            index=1
+        )
 
-with s4:
-    min_score_filter = st.slider(
-        "Scanner Minimum Score",
-        min_value=0,
-        max_value=100,
-        value=50,
-        step=5,
-        help="This filter affects only Best Setup / Top Setups scanner. Coin analysis dropdown still shows all loaded coins."
-    )
+    with s3:
+        scan_size = st.selectbox(
+            "🌍 Coins To Scan",
+            [100, 250, 500, 750],
+            index=1
+        )
+
+    with s4:
+        min_score_filter = st.slider(
+            "Scanner Minimum Score",
+            min_value=0,
+            max_value=100,
+            value=50,
+            step=5,
+            help="This filter affects only Best Setup / Top Setups scanner. Coin analysis dropdown still shows all loaded coins."
+        )
 
 # ---------- MACRO APIs ----------
 
@@ -857,16 +1091,20 @@ def trade_plan(coin, action):
 
 def plan_explanation(plan_key, action):
     if plan_key == "entry":
-        return "Текущая цена выбранной монеты. Уровни ниже рассчитаны от неё, потому что мы не знаем, ты уже купила или только смотришь."
+        if "AVOID" in action:
+            return "🇬🇧 Not a fresh-buy signal. Use this only as a reference if you already hold the coin.<br>🇷🇺 Это не сигнал на новую покупку. Используй как ориентир, если монета уже куплена."
+        if "WATCH" in action:
+            return "🇬🇧 Better to wait for confirmation or a better price.<br>🇷🇺 Лучше ждать подтверждение или более хорошую цену."
+        return "🇬🇧 Possible entry area based on current price.<br>🇷🇺 Возможная зона входа от текущей цены."
 
     if plan_key == "stop":
-        return "Stop — ориентир, где идея становится неправильной. Особенно полезно, если монета уже куплена."
+        return "🇬🇧 If price falls below this level, the idea may be wrong.<br>🇷🇺 Если цена падает ниже этого уровня, идея может быть ошибочной."
 
-    if plan_key == "tp1":
-        return "TP1 — первый уровень частичной фиксации прибыли. Не обязательно продавать всё."
+    if plan_key == "target1":
+        return "🇬🇧 First area to consider taking partial profit.<br>🇷🇺 Первый уровень, где можно частично зафиксировать прибыль."
 
-    if plan_key == "tp2":
-        return "TP2 — второй уровень прибыли, если движение продолжится."
+    if plan_key == "target2":
+        return "🇬🇧 Second profit area if momentum continues.<br>🇷🇺 Второй уровень прибыли, если движение продолжится."
 
     return ""
 
@@ -883,165 +1121,6 @@ if "error" in market:
 market_data = market["data"]
 market_bias, market_bias_score, market_bias_desc = get_market_bias(fg, btc_global)
 
-
-# ---------- MACRO SECTION ----------
-st.subheader("🌐 Market Mood")
-
-m1, m2, m3, m4 = st.columns(4)
-
-with m1:
-    if fg:
-        val = fg["value"]
-        label = fg["label"]
-
-        if val <= 24:
-            fg_color = "red"
-            simple_status = "Extreme Fear"
-            simple_desc = "Рынок боится. Иногда это даёт хорошие точки для осторожного накопления."
-            emoji = "😱"
-        elif val <= 44:
-            fg_color = "yellow"
-            simple_status = "Fear"
-            simple_desc = "Рынок осторожный. Лучше не спешить и ждать подтверждения."
-            emoji = "😰"
-        elif val <= 55:
-            fg_color = "yellow"
-            simple_status = "Neutral"
-            simple_desc = "Рынок спокойный. Сильного общего сигнала сейчас нет."
-            emoji = "😐"
-        elif val <= 74:
-            fg_color = "green"
-            simple_status = "Greed"
-            simple_desc = "Импульс есть, но риск отката уже выше."
-            emoji = "😏"
-        else:
-            fg_color = "red"
-            simple_status = "Extreme Greed"
-            simple_desc = "Рынок может быть перегрет. Осторожно с новыми покупками."
-            emoji = "🤑"
-
-        html(f"""
-        <div class="clean-macro-card">
-            <div class="clean-macro-title">{emoji} Fear & Greed</div>
-            <div class="clean-macro-value">{val}</div>
-            <span class="clean-macro-status {fg_color}">{simple_status}</span>
-            <div class="clean-macro-desc">{simple_desc}</div>
-        </div>
-        """)
-    else:
-        html("""
-        <div class="clean-macro-card">
-            <div class="clean-macro-title">😐 Fear & Greed</div>
-            <div class="clean-macro-value">N/A</div>
-            <div class="clean-macro-desc">Данные сейчас недоступны.</div>
-        </div>
-        """)
-
-with m2:
-    if btc_global and btc_global["btc_dominance"]:
-        dom = btc_global["btc_dominance"]
-
-        if dom >= 55:
-            dom_color = "red"
-            dom_status = "BTC Strong"
-            dom_desc = "Bitcoin сейчас сильнее. Альтам может быть сложнее расти."
-            dom_emoji = "🟠"
-        elif dom >= 48:
-            dom_color = "yellow"
-            dom_status = "Mixed"
-            dom_desc = "Смешанный рынок. Нет явного преимущества BTC или альтов."
-            dom_emoji = "⚖️"
-        else:
-            dom_color = "green"
-            dom_status = "Alt Friendly"
-            dom_desc = "Деньги больше идут в альты. Для альткоинов условия лучше."
-            dom_emoji = "🚀"
-
-        html(f"""
-        <div class="clean-macro-card">
-            <div class="clean-macro-title">{dom_emoji} BTC Dominance</div>
-            <div class="clean-macro-value">{dom}%</div>
-            <span class="clean-macro-status {dom_color}">{dom_status}</span>
-            <div class="clean-macro-desc">{dom_desc}</div>
-        </div>
-        """)
-    else:
-        html("""
-        <div class="clean-macro-card">
-            <div class="clean-macro-title">🟠 BTC Dominance</div>
-            <div class="clean-macro-value">N/A</div>
-            <div class="clean-macro-desc">Данные сейчас недоступны.</div>
-        </div>
-        """)
-
-with m3:
-    if btc_global and btc_global["total_mcap"]:
-        mcap = btc_global["total_mcap"]
-        html(f"""
-        <div class="clean-macro-card">
-            <div class="clean-macro-title">💰 Crypto Market Cap</div>
-            <div class="clean-macro-value">${fmt(mcap)}</div>
-            <span class="clean-macro-status blue">Market Size</span>
-            <div class="clean-macro-desc">Общий размер всего крипторынка.</div>
-        </div>
-        """)
-    else:
-        html("""
-        <div class="clean-macro-card">
-            <div class="clean-macro-title">💰 Market Cap</div>
-            <div class="clean-macro-value">N/A</div>
-            <div class="clean-macro-desc">Данные сейчас недоступны.</div>
-        </div>
-        """)
-
-with m4:
-    if market_bias == "BTC_SEASON":
-        bias_color = "red"
-        bias_title = "BTC Season"
-        bias_desc = "Сейчас Bitcoin выглядит сильнее большинства альтов."
-        bias_emoji = "🟠"
-    elif market_bias == "ALT_FRIENDLY":
-        bias_color = "green"
-        bias_title = "Altcoin Friendly"
-        bias_desc = "Условия для альткоинов выглядят лучше."
-        bias_emoji = "🚀"
-    elif market_bias == "OVERHEATED":
-        bias_color = "red"
-        bias_title = "Overheated"
-        bias_desc = "Рынок может быть перегрет. Не стоит гнаться за свечами."
-        bias_emoji = "🔥"
-    elif market_bias == "ACCUMULATION":
-        bias_color = "green"
-        bias_title = "Accumulation"
-        bias_desc = "Рынок в страхе. Можно искать осторожные точки входа."
-        bias_emoji = "🧊"
-    elif market_bias == "MIXED":
-        bias_color = "yellow"
-        bias_title = "Mixed Market"
-        bias_desc = "Нет сильного направления. Лучше выбирать только лучшие setups."
-        bias_emoji = "⚖️"
-    else:
-        bias_color = "yellow"
-        bias_title = "Unknown"
-        bias_desc = "Часть данных недоступна."
-        bias_emoji = "🧭"
-
-    html(f"""
-    <div class="clean-macro-card">
-        <div class="clean-macro-title">{bias_emoji} Market Bias</div>
-        <div class="clean-macro-value" style="font-size:34px;">{bias_title}</div>
-        <span class="clean-macro-status {bias_color}">Market Mode</span>
-        <div class="clean-macro-desc">{bias_desc}</div>
-    </div>
-    """)
-
-html(f"""
-<div class="clean-summary">
-    <b>🔍 Короткий вывод:</b> {bias_desc}
-</div>
-""")
-
-st.divider()
 
 # ---------- BUILD SIGNALS ----------
 signals = []
@@ -1088,271 +1167,440 @@ filtered_signals = [s for s in signals if s["score"] >= min_score_filter]
 best = filtered_signals[0] if filtered_signals else None
 top10 = filtered_signals[:10]
 
-# ---------- PART 1: SELECTED COIN ANALYSIS ----------
-html("""
-<div class="card">
-    <div style="font-size:34px; font-weight:900; color:white;">
-        🧠 Coin Analysis / Анализ монеты
-    </div>
-    <div class="small-muted" style="margin-top:10px;">
-        Part 1: analyze any coin from the loaded market list. This is independent from the Top Setups scanner filter.
-    </div>
-</div>
-""")
+with tab_coin:
+    # ---------- SELECTED COIN ANALYSIS / POLISHED DASHBOARD ----------
+    coin_options = {s["id"]: s for s in signals}
+    coin_ids = list(coin_options.keys())
 
-coin_options = {s["id"]: s for s in signals}
-coin_ids = list(coin_options.keys())
+    default_coin_id = "bitcoin" if "bitcoin" in coin_options else coin_ids[0]
 
-# Default to real Bitcoin if it is loaded, otherwise first available coin.
-default_coin_id = "bitcoin" if "bitcoin" in coin_options else coin_ids[0]
+    if "coin_selector" in st.session_state and st.session_state["coin_selector"] not in coin_options:
+        st.session_state["coin_selector"] = default_coin_id
 
-# If the previous selection disappears after changing scan size/currency, reset safely.
-if "coin_selector" in st.session_state and st.session_state["coin_selector"] not in coin_options:
-    st.session_state["coin_selector"] = default_coin_id
+    selected_coin_id = st.selectbox(
+        "Choose coin / Выбери монету",
+        coin_ids,
+        index=coin_ids.index(st.session_state.get("coin_selector", default_coin_id)),
+        format_func=lambda coin_id:
+            f"{coin_options[coin_id]['symbol']} — {coin_options[coin_id]['coin']}",
+        key="coin_selector"
+    )
 
-selected_coin_id = st.selectbox(
-    "Choose coin / Выбери монету",
-    coin_ids,
-    index=coin_ids.index(st.session_state.get("coin_selector", default_coin_id)),
-    format_func=lambda coin_id:
-        f"{coin_options[coin_id]['symbol']} — {coin_options[coin_id]['coin']}",
-    key="coin_selector"
-)
+    selected = coin_options[selected_coin_id]
+    plan = selected["plan"]
+    metric_class = "positive-text" if selected["24h"] >= 0 else "negative-text"
+    h1_class = "positive-text" if selected["1h"] >= 0 else "negative-text"
+    d7_class = "positive-text" if selected["7d"] >= 0 else "negative-text"
+    coin_icon = "₿" if selected["symbol"] == "BTC" else selected["symbol"][:1]
 
-selected = coin_options[selected_coin_id]
+    is_small_cap = selected["market_cap"] < 500_000_000
+    small_cap_warning = ""
+    if is_small_cap and selected["score"] >= 65:
+        small_cap_warning = """
+        <div class="warning-box">
+            ⚠️ <b>Small cap risk!</b><br>
+            Маленькая монета: выше риск резких движений, низкой ликвидности и манипуляций.
+        </div>
+        """
 
-metric_class = "metric-positive" if selected["24h"] >= 0 else "metric-negative"
-
-is_small_cap = selected["market_cap"] < 500_000_000
-small_cap_warning = ""
-if is_small_cap and selected["score"] >= 65:
-    small_cap_warning = """
-    <div class="warning-box">
-        ⚠️ <b>Small cap risk!</b><br><br>
-        🇷🇺 Это маленькая монета. Даже при хорошем setup риск выше: резкие движения, низкая ликвидность, манипуляции.<br><br>
-        🇬🇧 Small-cap coin. Even with a good setup, risk is higher: sharp moves, low liquidity, manipulation.
-    </div>
-    """
-
-left, right = st.columns([1, 1])
-
-with left:
     html(f"""
+    <div class="dashboard-grid">
+        <div>
+            <div class="glass-card coin-card-main">
+                <div class="coin-head-row">
+                    <div style="display:flex; gap:16px; align-items:center;">
+                        <div class="coin-symbol-round">{coin_icon}</div>
+                        <div>
+                            <div class="coin-title-small">{selected["symbol"]}</div>
+                            <div class="coin-subtitle-small">{selected["coin"]}</div>
+                        </div>
+                    </div>
+                    <span class="badge {selected["what_color"]}" style="margin:0; font-size:13px; padding:8px 12px;">Watchlist</span>
+                </div>
+
+                <div class="price-main">{fmt(selected["price"])} {currency.upper()}</div>
+                <div class="{metric_class}" style="font-size:20px; font-weight:900;">24h: {selected["24h"]:.2f}%</div>
+
+                <div class="metric-grid">
+                    <div class="metric-tile">
+                        <div class="metric-title-mini">1h Change</div>
+                        <div class="metric-value-mini {h1_class}">{selected["1h"]:.2f}%</div>
+                    </div>
+                    <div class="metric-tile">
+                        <div class="metric-title-mini">7d Change</div>
+                        <div class="metric-value-mini {d7_class}">{selected["7d"]:.2f}%</div>
+                    </div>
+                    <div class="metric-tile">
+                        <div class="metric-title-mini">Market Cap</div>
+                        <div class="metric-value-mini">{fmt(selected["market_cap"])}</div>
+                    </div>
+                    <div class="metric-tile">
+                        <div class="metric-title-mini">Volume Ratio</div>
+                        <div class="metric-value-mini">{selected["volume_ratio"]:.2%}</div>
+                    </div>
+                    <div class="metric-tile metric-tile-wide">
+                        <div class="metric-title-mini">Momentum Proxy</div>
+                        <div class="metric-value-mini">{selected["momentum_proxy"]}/100</div>
+                    </div>
+                </div>
+                {small_cap_warning}
+            </div>
+
+            <div class="glass-card reasons-card">
+                <div class="compact-section-title">🧠 Why this score? / Почему такой скор?</div>
+                {explain_reasons(selected["reasons"])}
+            </div>
+        </div>
+
+        <div>
+            <div class="glass-card">
+                <div class="compact-section-title">🎯 Final Decision / Итоговая оценка</div>
+                <div class="small-muted">Main summary for the selected coin / Главный вывод по выбранной монете</div>
+
+                <div class="decision-top">
+                    <div class="big-decision-badge {selected["action_color"]}">{selected["action"]}</div>
+                    <div class="score-box">
+                        <div class="score-box-label">Setup Score</div>
+                        <div class="score-box-value">{selected["score"]}/100</div>
+                    </div>
+                </div>
+
+                <div class="alert-summary">
+                    <div class="alert-icon">!</div>
+                    <div><b>{selected["action_reason"]}</b><br><span style="color:#cbd5e1;">Better opportunities may be available.</span></div>
+                </div>
+
+                <div class="decision-row">
+                    <div class="decision-label-wrap">
+                        <div class="decision-icon">🕒</div>
+                        <div>
+                            <div class="decision-title">Buy Timing</div>
+                            <div class="decision-sub">When is the best time to buy?</div>
+                        </div>
+                    </div>
+                    <div class="pill-mini {selected["entry_color"]}">{selected["entry_quality"]}</div>
+                </div>
+
+                <div class="decision-row">
+                    <div class="decision-label-wrap">
+                        <div class="decision-icon">🛡️</div>
+                        <div>
+                            <div class="decision-title">Risk</div>
+                            <div class="decision-sub">Overall risk level of this setup</div>
+                        </div>
+                    </div>
+                    <div class="pill-mini {selected["risk_color"]}">{selected["risk_level"]}</div>
+                </div>
+
+                <div class="decision-row">
+                    <div class="decision-label-wrap">
+                        <div class="decision-icon">👀</div>
+                        <div>
+                            <div class="decision-title">What To Do</div>
+                            <div class="decision-sub">Recommended action now</div>
+                        </div>
+                    </div>
+                    <div class="pill-mini {selected["what_color"]}">{selected["what_to_do"]}</div>
+                </div>
+
+                <div class="decision-row">
+                    <div class="decision-label-wrap">
+                        <div class="decision-icon">💰</div>
+                        <div>
+                            <div class="decision-title">Profit Status / Exit</div>
+                            <div class="decision-sub">Should you take profit or exit?</div>
+                        </div>
+                    </div>
+                    <div class="pill-mini {selected["profit_color"]}">{selected["profit_status"]}</div>
+                </div>
+
+                <div style="margin-top:22px; border-top:1px solid rgba(255,255,255,0.10); padding-top:18px;">
+                    <div class="compact-section-title">📋 Action Plan / План сделки</div>
+                    <div class="plan-grid-modern">
+                        <div class="plan-tile border-blue">
+                            <div class="plan-title positive-text">Entry / Вход</div>
+                            <div class="plan-value">{plan["entry"]}</div>
+                            <div class="plan-desc">{plan_explanation("entry", selected["action"])}</div>
+                        </div>
+                        <div class="plan-tile border-red">
+                            <div class="plan-title negative-text">Stop Loss / Защитный стоп</div>
+                            <div class="plan-value">{plan["stop"]}</div>
+                            <div class="plan-desc">{plan_explanation("stop", selected["action"])}</div>
+                        </div>
+                        <div class="plan-tile border-green">
+                            <div class="plan-title positive-text">First Profit Target / Первая цель</div>
+                            <div class="plan-value">{plan["tp1"]}</div>
+                            <div class="plan-desc">{plan_explanation("target1", selected["action"])}</div>
+                        </div>
+                        <div class="plan-tile border-green">
+                            <div class="plan-title positive-text">Second Profit Target / Вторая цель</div>
+                            <div class="plan-value">{plan["tp2"]}</div>
+                            <div class="plan-desc">{plan_explanation("target2", selected["action"])}</div>
+                        </div>
+                    </div>
+                    <div class="info-box" style="margin-top:14px;">
+                        <b>How to read this / Как читать:</b><br>
+                        🇬🇧 These are reference levels from the current price. They do not mean “buy now”. If the coin is already bought, they help you think about risk and profit zones.<br><br>
+                        🇷🇺 Это ориентиры от текущей цены. Они не означают “покупай сейчас”. Если монета уже куплена, они помогают понять риск и зоны фиксации прибыли.<br><br>
+                        🇬🇧 {plan["note_en"]}<br>
+                        🇷🇺 {plan["note_ru"]}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    """)
+
+
+with tab_opps:
+    # ---------- PART 2: MARKET SCANNER ----------
+    st.divider()
+    st.subheader("🚀 Best Opportunities / Лучшие возможности")
+    st.caption("Part 2: separate scanner for the best setups across the loaded market. It uses Scanner Minimum Score filter.")
+
+    if not filtered_signals:
+        st.warning("No coins match the selected scanner score. Lower Scanner Minimum Score to see market setups.")
+        rows = []
+    else:
+        st.subheader("🔥 Best Setup Now")
+
+        b1, b2 = st.columns([3, 1])
+
+        with b1:
+            html(f"""
     <div class="card">
-        <div class="coin-title">{selected["symbol"]}</div>
-        <div class="coin-name">{selected["coin"]}</div>
-        <div class="price">{fmt(selected["price"])} {currency.upper()}</div>
-        <div class="{metric_class}">24h: {selected["24h"]:.2f}%</div>
+        <span class="badge {best["action_color"]}">{best["action"]}</span>
+        <h1>{best["symbol"]} — {best["coin"]}</h1>
+        <div class="price">{fmt(best["price"])} {currency.upper()}</div>
+        <div class="{'metric-positive' if best["24h"] >= 0 else 'metric-negative'}">24h: {best["24h"]:.2f}%</div>
         <br>
         <div class="small-muted">
-            1h: {selected["1h"]:.2f}% &nbsp;&nbsp;|&nbsp;&nbsp;
-            7d: {selected["7d"]:.2f}%<br>
-            Market Cap: {fmt(selected["market_cap"])} &nbsp;&nbsp;|&nbsp;&nbsp;
-            Volume Ratio: {selected["volume_ratio"]:.2%}<br>
-            Momentum Proxy: {selected["momentum_proxy"]}/100
+            Score: {best["score"]}/100 &nbsp;&nbsp;|&nbsp;&nbsp;
+            Entry: {best["entry_quality"]} &nbsp;&nbsp;|&nbsp;&nbsp;
+            Risk: {best["risk_level"]} &nbsp;&nbsp;|&nbsp;&nbsp;
+            Profit Status: {best["profit_status"]}
         </div>
-        {small_cap_warning}
-    </div>
-    """)
-
-with right:
-    html(f"""
-    <div class="card">
-        <h2>🎯 Coin Setup</h2>
-        <span class="badge {selected["action_color"]}" style="font-size:22px; padding:14px 24px;">{selected["action"]}</span>
-        <h3>Score: {selected["score"]}/100</h3>
-
-        <div class="reason-row">
-            <span class="reason-label">Buy Timing:</span><br>
-            <span class="badge {selected["entry_color"]}">{selected["entry_quality"]}</span><br>
-            <span style="font-size:14px;">{selected["entry_reason"]}</span>
-        </div>
-
-        <div class="reason-row">
-            <span class="reason-label">Risk:</span><br>
-            <span class="badge {selected["risk_color"]}">{selected["risk_level"]}</span>
-        </div>
-
-        <div class="reason-row">
-            <span class="reason-label">What To Do:</span><br>
-            <span class="badge {selected["what_color"]}">{selected["what_to_do"]}</span><br>
-            <span style="font-size:14px;">{selected["what_reason"]}</span>
-        </div>
-
-        <div class="reason-row">
-            <span class="reason-label">Profit Status / Exit:</span><br>
-            <span class="badge {selected["profit_color"]}">{selected["profit_status"]}</span><br>
-            <span style="font-size:14px;">{selected["profit_reason"]}</span>
-        </div>
-
         <div class="info-box">
-            <b>Final answer / Итог:</b><br>
-            {selected["action_reason"]}
+            {best["action_reason"]}
+        </div>
+        <br>
+        <div class="small-muted"><b>Trade Plan:</b><br>
+        Entry: {best["plan"]["entry"]}<br>
+        Stop: {best["plan"]["stop"]}<br>
+        First Profit Target: {best["plan"]["tp1"]}<br>
+        Second Profit Target: {best["plan"]["tp2"]}
         </div>
     </div>
-    """)
+            """)
 
-# ---------- TRADE PLAN ----------
-plan = selected["plan"]
+        with b2:
+            if cat_orange.exists():
+                st.image(str(cat_orange), width=170)
+            else:
+                st.markdown("🐈")
 
-st.subheader("🧾 Action Plan / План по выбранной монете")
-st.caption("Levels are always shown because you may already hold this coin or may only be watching it. Educational only, not financial advice.")
+        # ---------- TOP SETUPS TABLE ----------
+        st.subheader("🏆 Top Setups")
 
-tp1, tp2, tp3, tp4 = st.columns(4)
+        rows = []
 
-with tp1:
-    html(f"""
-    <div class="kpi">
-        <div class="macro-label">Entry / Вход</div>
-        <div style="font-size:22px;font-weight:900;line-height:1.25;">{plan["entry"]}</div>
-        <div style="font-size:13px;color:#b0b8d1;margin-top:10px;line-height:1.45;">
-            {plan_explanation("entry", selected["action"])}
-        </div>
-    </div>
-    """)
+        for s in top10:
+            rows.append({
+                "Coin": f"{s['symbol']} — {s['coin']}",
+                "Price": f"{fmt(s['price'])} {currency.upper()}",
+                "1h %": round(s["1h"], 2),
+                "24h %": round(s["24h"], 2),
+                "7d %": round(s["7d"], 2),
+                "Vol/MCap": f"{s['volume_ratio']:.2%}",
+                "Momentum": s["momentum_proxy"],
+                "Score": s["score"],
+                "Action": s["action"],
+                "Entry": s["entry_quality"].replace("Wait For Better Entry", "Wait").replace("Bad Timing", "Bad"),
+                "Risk": s["risk_level"],
+                "Exit": s["exit_signal"]
+            })
 
-with tp2:
-    html(f"""
-    <div class="kpi">
-        <div class="macro-label">Stop / Стоп</div>
-        <div style="font-size:22px;font-weight:900;line-height:1.25;">{plan["stop"]}</div>
-        <div style="font-size:13px;color:#b0b8d1;margin-top:10px;line-height:1.45;">
-            {plan_explanation("stop", selected["action"])}
-        </div>
-    </div>
-    """)
+    st.dataframe(
+        pd.DataFrame(rows),
+        use_container_width=True,
+        hide_index=True
+    )
 
-with tp3:
-    html(f"""
-    <div class="kpi">
-        <div class="macro-label">TP1 / Первая прибыль</div>
-        <div style="font-size:22px;font-weight:900;line-height:1.25;">{plan["tp1"]}</div>
-        <div style="font-size:13px;color:#b0b8d1;margin-top:10px;line-height:1.45;">
-            {plan_explanation("tp1", selected["action"])}
-        </div>
-    </div>
-    """)
+    # ---------- DOWNLOAD ----------
+    csv_df = pd.DataFrame(rows)
+    csv = csv_df.to_csv(index=False).encode("utf-8")
 
-with tp4:
-    html(f"""
-    <div class="kpi">
-        <div class="macro-label">TP2 / Вторая прибыль</div>
-        <div style="font-size:22px;font-weight:900;line-height:1.25;">{plan["tp2"]}</div>
-        <div style="font-size:13px;color:#b0b8d1;margin-top:10px;line-height:1.45;">
-            {plan_explanation("tp2", selected["action"])}
-        </div>
-    </div>
-    """)
+    st.download_button(
+        label="📥 Download Scanner Results CSV",
+        data=csv,
+        file_name="koshka_top_setups.csv",
+        mime="text/csv"
+    )
 
-html(f"""
-<div class="trade-plan-box">
-    🇷🇺 {plan["note_ru"]}<br><br>
-    🇬🇧 {plan["note_en"]}
-</div>
-""")
 
-# ---------- PRICE MOVEMENT ----------
-st.subheader("📈 Price Movement / Движение цены")
+with tab_market:
+    # ---------- MACRO SECTION ----------
+    st.divider()
+    st.subheader("🌐 Market Overview / Обзор рынка")
+    st.caption("Bottom section: macro context for all coins — useful after reviewing selected coin and opportunities.")
 
-p1, p2, p3, p4, p5 = st.columns(5)
+    m1, m2, m3, m4 = st.columns(4)
 
-p1.metric("1 Hour / 1 час", f"{selected['1h']:.2f}%")
-p2.metric("24 Hours / 24 часа", f"{selected['24h']:.2f}%")
-p3.metric("7 Days / 7 дней", f"{selected['7d']:.2f}%")
-p4.metric("Momentum Proxy", f"{selected['momentum_proxy']}/100")
-p5.metric("Volume / MCap", f"{selected['volume_ratio']:.2%}")
+    with m1:
+        if fg:
+            val = fg["value"]
+            label = fg["label"]
 
-# ---------- REASONS ----------
-st.subheader("🧠 Why this score? / Почему такой скор?")
-html(f"""
-<div class="card">
-    {explain_reasons(selected["reasons"])}
-</div>
-""")
+            if val <= 24:
+                fg_color = "red"
+                simple_status = "Extreme Fear"
+                simple_desc = "Рынок боится. Иногда это даёт хорошие точки для осторожного накопления."
+                emoji = "😱"
+            elif val <= 44:
+                fg_color = "yellow"
+                simple_status = "Fear"
+                simple_desc = "Рынок осторожный. Лучше не спешить и ждать подтверждения."
+                emoji = "😰"
+            elif val <= 55:
+                fg_color = "yellow"
+                simple_status = "Neutral"
+                simple_desc = "Рынок спокойный. Сильного общего сигнала сейчас нет."
+                emoji = "😐"
+            elif val <= 74:
+                fg_color = "green"
+                simple_status = "Greed"
+                simple_desc = "Импульс есть, но риск отката уже выше."
+                emoji = "😏"
+            else:
+                fg_color = "red"
+                simple_status = "Extreme Greed"
+                simple_desc = "Рынок может быть перегрет. Осторожно с новыми покупками."
+                emoji = "🤑"
 
-# ---------- PART 2: MARKET SCANNER ----------
-st.divider()
-st.subheader("🔎 Market Scanner / Лучшие варианты")
-st.caption("Part 2 scans the loaded market and shows only coins above the Scanner Minimum Score.")
+            html(f"""
+            <div class="clean-macro-card">
+                <div class="clean-macro-title">{emoji} Fear & Greed</div>
+                <div class="clean-macro-value">{val}</div>
+                <span class="clean-macro-status {fg_color}">{simple_status}</span>
+                <div class="clean-macro-desc">{simple_desc}</div>
+            </div>
+            """)
+        else:
+            html("""
+            <div class="clean-macro-card">
+                <div class="clean-macro-title">😐 Fear & Greed</div>
+                <div class="clean-macro-value">N/A</div>
+                <div class="clean-macro-desc">Данные сейчас недоступны.</div>
+            </div>
+            """)
 
-if not filtered_signals:
-    st.warning("No coins match the selected scanner score. Lower Scanner Minimum Score to see market setups.")
-    rows = []
-else:
-    st.subheader("🔥 Best Setup Now")
+    with m2:
+        if btc_global and btc_global["btc_dominance"]:
+            dom = btc_global["btc_dominance"]
 
-    b1, b2 = st.columns([3, 1])
+            if dom >= 55:
+                dom_color = "red"
+                dom_status = "BTC Strong"
+                dom_desc = "Bitcoin сейчас сильнее. Альтам может быть сложнее расти."
+                dom_emoji = "🟠"
+            elif dom >= 48:
+                dom_color = "yellow"
+                dom_status = "Mixed"
+                dom_desc = "Смешанный рынок. Нет явного преимущества BTC или альтов."
+                dom_emoji = "⚖️"
+            else:
+                dom_color = "green"
+                dom_status = "Alt Friendly"
+                dom_desc = "Деньги больше идут в альты. Для альткоинов условия лучше."
+                dom_emoji = "🚀"
 
-    with b1:
+            html(f"""
+            <div class="clean-macro-card">
+                <div class="clean-macro-title">{dom_emoji} BTC Dominance</div>
+                <div class="clean-macro-value">{dom}%</div>
+                <span class="clean-macro-status {dom_color}">{dom_status}</span>
+                <div class="clean-macro-desc">{dom_desc}</div>
+            </div>
+            """)
+        else:
+            html("""
+            <div class="clean-macro-card">
+                <div class="clean-macro-title">🟠 BTC Dominance</div>
+                <div class="clean-macro-value">N/A</div>
+                <div class="clean-macro-desc">Данные сейчас недоступны.</div>
+            </div>
+            """)
+
+    with m3:
+        if btc_global and btc_global["total_mcap"]:
+            mcap = btc_global["total_mcap"]
+            html(f"""
+            <div class="clean-macro-card">
+                <div class="clean-macro-title">💰 Crypto Market Cap</div>
+                <div class="clean-macro-value">${fmt(mcap)}</div>
+                <span class="clean-macro-status blue">Market Size</span>
+                <div class="clean-macro-desc">Общий размер всего крипторынка.</div>
+            </div>
+            """)
+        else:
+            html("""
+            <div class="clean-macro-card">
+                <div class="clean-macro-title">💰 Market Cap</div>
+                <div class="clean-macro-value">N/A</div>
+                <div class="clean-macro-desc">Данные сейчас недоступны.</div>
+            </div>
+            """)
+
+    with m4:
+        if market_bias == "BTC_SEASON":
+            bias_color = "red"
+            bias_title = "BTC Season"
+            bias_desc = "Сейчас Bitcoin выглядит сильнее большинства альтов."
+            bias_emoji = "🟠"
+        elif market_bias == "ALT_FRIENDLY":
+            bias_color = "green"
+            bias_title = "Altcoin Friendly"
+            bias_desc = "Условия для альткоинов выглядят лучше."
+            bias_emoji = "🚀"
+        elif market_bias == "OVERHEATED":
+            bias_color = "red"
+            bias_title = "Overheated"
+            bias_desc = "Рынок может быть перегрет. Не стоит гнаться за свечами."
+            bias_emoji = "🔥"
+        elif market_bias == "ACCUMULATION":
+            bias_color = "green"
+            bias_title = "Accumulation"
+            bias_desc = "Рынок в страхе. Можно искать осторожные точки входа."
+            bias_emoji = "🧊"
+        elif market_bias == "MIXED":
+            bias_color = "yellow"
+            bias_title = "Mixed Market"
+            bias_desc = "Нет сильного направления. Лучше выбирать только лучшие setups."
+            bias_emoji = "⚖️"
+        else:
+            bias_color = "yellow"
+            bias_title = "Unknown"
+            bias_desc = "Часть данных недоступна."
+            bias_emoji = "🧭"
+
         html(f"""
-<div class="card">
-    <span class="badge {best["action_color"]}">{best["action"]}</span>
-    <h1>{best["symbol"]} — {best["coin"]}</h1>
-    <div class="price">{fmt(best["price"])} {currency.upper()}</div>
-    <div class="{'metric-positive' if best["24h"] >= 0 else 'metric-negative'}">24h: {best["24h"]:.2f}%</div>
-    <br>
-    <div class="small-muted">
-        Score: {best["score"]}/100 &nbsp;&nbsp;|&nbsp;&nbsp;
-        Entry: {best["entry_quality"]} &nbsp;&nbsp;|&nbsp;&nbsp;
-        Risk: {best["risk_level"]} &nbsp;&nbsp;|&nbsp;&nbsp;
-        Profit Status: {best["profit_status"]}
-    </div>
-    <div class="info-box">
-        {best["action_reason"]}
-    </div>
-    <br>
-    <div class="small-muted"><b>Trade Plan:</b><br>
-    Entry: {best["plan"]["entry"]}<br>
-    Stop: {best["plan"]["stop"]}<br>
-    TP1: {best["plan"]["tp1"]}<br>
-    TP2: {best["plan"]["tp2"]}
-    </div>
-</div>
+        <div class="clean-macro-card">
+            <div class="clean-macro-title">{bias_emoji} Market Bias</div>
+            <div class="clean-macro-value" style="font-size:34px;">{bias_title}</div>
+            <span class="clean-macro-status {bias_color}">Market Mode</span>
+            <div class="clean-macro-desc">{bias_desc}</div>
+        </div>
         """)
 
-    with b2:
-        if cat_orange.exists():
-            st.image(str(cat_orange), width=220)
-        else:
-            st.markdown("🐈")
+    html(f"""
+    <div class="clean-summary">
+        <b>🔍 Короткий вывод:</b> {bias_desc}
+    </div>
+    """)
 
-    # ---------- TOP SETUPS TABLE ----------
-    st.subheader("🏆 Top Setups")
+    st.divider()
 
-    rows = []
 
-    for s in top10:
-        rows.append({
-            "Coin": f"{s['symbol']} — {s['coin']}",
-            "Price": f"{fmt(s['price'])} {currency.upper()}",
-            "1h %": round(s["1h"], 2),
-            "24h %": round(s["24h"], 2),
-            "7d %": round(s["7d"], 2),
-            "Vol/MCap": f"{s['volume_ratio']:.2%}",
-            "Momentum": s["momentum_proxy"],
-            "Score": s["score"],
-            "Action": s["action"],
-            "Entry": s["entry_quality"].replace("Wait For Better Entry", "Wait").replace("Bad Timing", "Bad"),
-            "Risk": s["risk_level"],
-            "Exit": s["exit_signal"]
-        })
-
-st.dataframe(
-    pd.DataFrame(rows),
-    use_container_width=True,
-    hide_index=True
-)
-
-# ---------- DOWNLOAD ----------
-csv_df = pd.DataFrame(rows)
-csv = csv_df.to_csv(index=False).encode("utf-8")
-
-st.download_button(
-    label="📥 Download Scanner Results CSV",
-    data=csv,
-    file_name="koshka_top_setups.csv",
-    mime="text/csv"
-)
 
 # ---------- REFRESH ----------
 st.divider()
