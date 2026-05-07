@@ -836,27 +836,30 @@ with left:
     """)
 
 with right:
-    html(f"""
-    <div class="card">
-        <span class="badge {badge_color}">{decision_text}</span>
-        <h1>Coin Health Score</h1>
-        <h3>Score: {selected["score"]}/100</h3>
-        <div class="info-box">
-            🇷🇺 Этот скор показывает текущие технические признаки — не предсказание.<br>
-            🇬🇧 This score shows current technical signals — not a prediction.
-        </div>
-        <br>
-        <div class="small-muted"><b>Reasons / Причины:</b></div>
-    </div>
-    """)
+    reasons_inner = ""
     for r in selected["reasons"]:
         label, desc = REASON_EXPLAIN.get(r, (r, ""))
-        html(f"""
-        <div class="reason-row">
-            <span class="reason-label">{label}</span><br>
-            <span style="font-size:14px;">{desc}</span>
-        </div>
-        """)
+        reasons_inner += (
+            f'<div class="reason-row">'
+            f'<span class="reason-label">{label}</span><br>'
+            f'<span style="font-size:14px;">{desc}</span>'
+            f'</div>'
+        )
+
+    card = (
+        f'<div class="card">'
+        f'<span class="badge {badge_color}">{decision_text}</span>'
+        f'<h1>Coin Health Score</h1>'
+        f'<h3>Score: {selected["score"]}/100</h3>'
+        f'<div class="info-box">'
+        f'🇷🇺 Этот скор показывает текущие технические признаки — не предсказание.<br>'
+        f'🇬🇧 This score shows current technical signals — not a prediction.'
+        f'</div>'
+        f'<br><div class="small-muted"><b>Reasons / Причины:</b></div><br>'
+        f'{reasons_inner}'
+        f'</div>'
+    )
+    st.markdown(card, unsafe_allow_html=True)
 
 # ---------- PRICE MOVEMENT ----------
 st.subheader("📈 Price Movement / Движение цены")
@@ -882,30 +885,31 @@ best_metric = (
 b1, b2 = st.columns([3, 1])
 
 with b1:
-    html(f"""
-    <div class="card">
-        <span class="badge {best_color}">{best_decision_text}</span>
-        <h1>{best["symbol"]} — {best["coin"]}</h1>
-        <div class="price">{fmt(best["price"])} {currency.upper()}</div>
-        <div class="{best_metric}">24h: {best["24h"]:.2f}%</div>
-        <br>
-        <div class="small-muted">
-            Momentum Proxy: {best["momentum_proxy"]}/100
-            &nbsp;&nbsp;|&nbsp;&nbsp;
-            Score: {best["score"]}/100
-        </div>
-        <br>
-        <div class="small-muted"><b>Why / Почему:</b></div>
-    </div>
-    """)
+    best_reasons_inner = ""
     for r in best["reasons"]:
         label, desc = REASON_EXPLAIN.get(r, (r, ""))
-        html(f"""
-        <div class="reason-row">
-            <span class="reason-label">{label}</span><br>
-            <span style="font-size:14px;">{desc}</span>
-        </div>
-        """)
+        best_reasons_inner += (
+            f'<div class="reason-row">'
+            f'<span class="reason-label">{label}</span><br>'
+            f'<span style="font-size:14px;">{desc}</span>'
+            f'</div>'
+        )
+
+    best_card = (
+        f'<div class="card">'
+        f'<span class="badge {best_color}">{best_decision_text}</span>'
+        f'<h1>{best["symbol"]} — {best["coin"]}</h1>'
+        f'<div class="price">{fmt(best["price"])} {currency.upper()}</div>'
+        f'<div class="{best_metric}">24h: {best["24h"]:.2f}%</div>'
+        f'<br>'
+        f'<div class="small-muted">'
+        f'Momentum Proxy: {best["momentum_proxy"]}/100 &nbsp;&nbsp;|&nbsp;&nbsp; Score: {best["score"]}/100'
+        f'</div>'
+        f'<br><div class="small-muted"><b>Why / Почему:</b></div><br>'
+        f'{best_reasons_inner}'
+        f'</div>'
+    )
+    st.markdown(best_card, unsafe_allow_html=True)
 
 with b2:
     if cat_orange.exists():
