@@ -595,71 +595,78 @@ h3 { font-size: 1.05rem !important; }
     margin-top:18px;
 }
 
-/* ---------- CLEAR SECTIONS + VISIBLE CONTROLS ---------- */
+/* ---------- COMPACT CONTROLS ---------- */
 .controls-panel {
-    background: rgba(15,23,42,0.58);
-    border: 1px solid rgba(99,102,241,0.34);
-    border-radius: 16px;
-    padding: 12px 16px;
-    margin: 10px 0 12px 0;
-    box-shadow: 0 10px 28px rgba(0,0,0,0.16);
+    background: rgba(15,23,42,0.50);
+    border: 1px solid rgba(99,102,241,0.28);
+    border-radius: 14px;
+    padding: 10px 14px;
+    margin: 8px 0 10px 0;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.14);
 }
 .controls-title {
     color: #ffffff;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 900;
     letter-spacing: -0.02em;
 }
 .controls-subtitle {
     color: #aab4cf;
-    font-size: 13px;
-    margin-top: 3px;
+    font-size: 12px;
+    margin-left: 8px;
+}
+.compact-row-title {
+    color:white;
+    font-size:15px;
+    font-weight:900;
+    margin: 10px 0 4px 2px;
 }
 .section-marker {
-    background: linear-gradient(135deg, rgba(15,23,42,0.72), rgba(30,41,59,0.68));
-    border: 1px solid rgba(148,163,184,0.20);
-    border-left: 4px solid #818cf8;
-    border-radius: 16px;
-    padding: 12px 16px;
-    margin: 12px 0 10px 0;
+    background: rgba(15,23,42,0.46);
+    border: 1px solid rgba(148,163,184,0.14);
+    border-left: 3px solid #818cf8;
+    border-radius: 14px;
+    padding: 9px 12px;
+    margin: 8px 0 8px 0;
 }
 .section-marker-title {
     color: white;
-    font-size: 18px;
+    font-size: 15px;
     font-weight: 900;
 }
 .section-marker-sub {
     color: #aab4cf;
-    font-size: 13px;
-    margin-top: 3px;
+    font-size: 12px;
+    margin-top: 2px;
 }
 .selected-coin-banner {
-    background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(59,130,246,0.12));
-    border: 1px solid rgba(16,185,129,0.36);
-    border-radius: 18px;
-    padding: 14px 18px;
-    margin: 12px 0 18px 0;
+    background: rgba(16,185,129,0.08);
+    border: 1px solid rgba(16,185,129,0.22);
+    border-radius: 12px;
+    padding: 8px 12px;
+    margin: 8px 0 12px 0;
     color: #dbeafe;
+    font-size: 12.5px;
 }
 .selected-coin-banner b { color: white; }
 [data-testid="stSelectbox"] {
-    background: rgba(15,23,42,0.42);
-    border: 1px solid rgba(148,163,184,0.18);
-    border-radius: 14px;
-    padding: 6px 10px 8px 10px;
+    background: rgba(15,23,42,0.34);
+    border: 1px solid rgba(148,163,184,0.14);
+    border-radius: 12px;
+    padding: 3px 8px 5px 8px;
 }
 [data-testid="stSelectbox"] label p {
-    font-size: 14px !important;
+    font-size: 12px !important;
     font-weight: 800 !important;
 }
 [data-baseweb="select"] > div {
-    min-height: 42px !important;
+    min-height: 36px !important;
 }
 [data-testid="stSlider"] {
-    background: rgba(15,23,42,0.42);
-    border: 1px solid rgba(148,163,184,0.18);
-    border-radius: 16px;
-    padding: 10px 14px 12px 14px;
+    background: rgba(15,23,42,0.34);
+    border: 1px solid rgba(148,163,184,0.14);
+    border-radius: 12px;
+    padding: 8px 12px 10px 12px;
 }
 button[data-baseweb="tab"] {
     font-weight: 850;
@@ -818,44 +825,41 @@ tab_coin, tab_opps, tab_market = st.tabs([
 with tab_coin:
     html("""
     <div class="controls-panel">
-        <div class="controls-title">⚙️ Settings</div>
-        <div class="controls-subtitle">Currency and risk mode affect the coin analysis, score, targets and risk interpretation.</div>
+        <span class="controls-title">⚙️ Settings</span>
+        <span class="controls-subtitle">Currency + risk mode affect score, targets and risk.</span>
     </div>
     """)
 
     c1, c2 = st.columns(2)
     with c1:
         currency = st.selectbox(
-            "💱 Currency",
+            "Currency",
             ["usd", "aed", "eur", "gbp", "rub"],
-            index=1,
-            help="All prices and action-plan targets will use this currency."
+            index=1
         )
 
     with c2:
         risk_mode = st.selectbox(
-            "⚠️ Risk Mode",
+            "Risk Mode",
             ["Conservative", "Average", "Aggressive"],
-            index=1,
-            help="Affects selected coin score and scanner logic. Conservative is stricter; Aggressive accepts more volatility."
+            index=1
         )
 
 # Best Opportunities needs scanner-only controls.
 with tab_opps:
     html("""
     <div class="controls-panel">
-        <div class="controls-title">⚙️ Settings</div>
-        <div class="controls-subtitle">Scanner size and minimum score control the Best Opportunities table.</div>
+        <span class="controls-title">⚙️ Settings</span>
+        <span class="controls-subtitle">Scanner size + minimum score control opportunities.</span>
     </div>
     """)
 
     s1, s2 = st.columns(2)
     with s1:
         scan_size = st.selectbox(
-            "🌍 Coins To Scan",
+            "Coins To Scan",
             [100, 250, 500, 750],
-            index=1,
-            help="How many top market-cap coins to load from the market API."
+            index=1
         )
 
     with s2:
@@ -864,8 +868,7 @@ with tab_opps:
             min_value=0,
             max_value=100,
             value=50,
-            step=5,
-            help="Only Best Opportunities scanner is filtered. Selected Coin still shows all loaded coins."
+            step=5
         )
 
 # ---------- MACRO APIs ----------
@@ -1478,26 +1481,22 @@ with tab_coin:
         st.session_state["coin_selector"] = default_coin_id
 
     html("""
-    <div class="section-marker">
-        <div class="section-marker-title">🔎 Choose coin to analyse</div>
-        <div class="section-marker-sub">Pick the coin you want the app to evaluate.</div>
-    </div>
+    <div class="compact-row-title">🔎 Coin to analyse</div>
     """)
 
     selected_coin_id = st.selectbox(
-        "Coin to analyse",
+        "Choose coin",
         coin_ids,
         index=coin_ids.index(st.session_state.get("coin_selector", default_coin_id)),
         format_func=lambda coin_id:
             f"{coin_options[coin_id]['symbol']} — {coin_options[coin_id]['coin']}",
-        key="coin_selector",
-        help="Pick any coin from the loaded market list."
+        key="coin_selector"
     )
 
     selected = coin_options[selected_coin_id]
     html(f"""
     <div class="selected-coin-banner">
-        🔍 Analysing: <b>{selected['symbol']} — {selected['coin']}</b> &nbsp; | &nbsp; <b>{currency.upper()}</b> &nbsp; | &nbsp; Risk: <b>{risk_mode}</b>
+        🔍 <b>{selected['symbol']} — {selected['coin']}</b> analysed in <b>{currency.upper()}</b> with <b>{risk_mode}</b> risk mode.
     </div>
     """)
     plan = selected["plan"]
