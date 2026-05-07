@@ -836,8 +836,6 @@ with left:
     """)
 
 with right:
-    reasons_html = explain_reasons(selected["reasons"])
-
     html(f"""
     <div class="card">
         <span class="badge {badge_color}">{decision_text}</span>
@@ -849,10 +847,16 @@ with right:
         </div>
         <br>
         <div class="small-muted"><b>Reasons / Причины:</b></div>
-        <br>
-        {reasons_html}
     </div>
     """)
+    for r in selected["reasons"]:
+        label, desc = REASON_EXPLAIN.get(r, (r, ""))
+        html(f"""
+        <div class="reason-row">
+            <span class="reason-label">{label}</span><br>
+            <span style="font-size:14px;">{desc}</span>
+        </div>
+        """)
 
 # ---------- PRICE MOVEMENT ----------
 st.subheader("📈 Price Movement / Движение цены")
@@ -878,8 +882,6 @@ best_metric = (
 b1, b2 = st.columns([3, 1])
 
 with b1:
-    best_reasons_html = explain_reasons(best["reasons"])
-
     html(f"""
     <div class="card">
         <span class="badge {best_color}">{best_decision_text}</span>
@@ -894,10 +896,16 @@ with b1:
         </div>
         <br>
         <div class="small-muted"><b>Why / Почему:</b></div>
-        <br>
-        {best_reasons_html}
     </div>
     """)
+    for r in best["reasons"]:
+        label, desc = REASON_EXPLAIN.get(r, (r, ""))
+        html(f"""
+        <div class="reason-row">
+            <span class="reason-label">{label}</span><br>
+            <span style="font-size:14px;">{desc}</span>
+        </div>
+        """)
 
 with b2:
     if cat_orange.exists():
