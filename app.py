@@ -1,4 +1,3 @@
-
 import streamlit as st
 import requests
 import pandas as pd
@@ -351,8 +350,7 @@ with h2:
     <div class="hero">
         <div class="big-title">🚀 Trust Me Bro Crypto Scanner</div>
         <div class="subtitle">
-            AI-assisted scoring engine for high-probability crypto setups.<br>
-            Less hype. More probability.
+            AI-assisted scoring engine for high-probability crypto setups.
         </div>
     </div>
     """)
@@ -376,57 +374,29 @@ with s1:
 with s2:
     risk_mode = st.selectbox(
         "⚠️ Risk Mode",
-        ["Conservative", "Balanced", "Aggressive"],
+        ["Conservative", "Average", "Aggressive"],
         index=1
     )
 
 with s3:
     scan_size = st.selectbox(
         "🌍 Coins To Scan",
-        [50, 100, 150, 200, 250],
+        [100, 250, 500, 750],
         index=1
     )
 
 with s4:
     min_score_filter = st.slider(
-        "Minimum Setup Score",
+        "Scanner Minimum Score",
         min_value=0,
         max_value=100,
         value=50,
-        step=5
+        step=5,
+        help="This filter affects only Best Setup / Top Setups scanner. Coin analysis dropdown still shows all loaded coins."
     )
 
-with st.expander("❓ How to read this app / Как читать приложение"):
-    st.markdown("""
-### 🇷🇺 Простыми словами
-
-Этот инструмент НЕ говорит: “точно покупай”.  
-Он ищет **high-probability setups** — монеты, где сейчас есть технические признаки интересного движения.
-
-**Action:**
-- 🟢 **BUY ZONE** — потенциально хороший момент для осторожного входа
-- 🟡 **WATCH** — монета интересная, но лучше наблюдать
-- 💰 **TAKE PROFIT / DO NOT CHASE** — монета уже сильно выросла, поздно входить
-- 🔴 **AVOID** — риск высокий или setup слабый
-
-**Buy Timing:**
-- 🟢 **EARLY** — движение может только начинаться
-- 🟡 **OK** — вход возможен, но не идеальный
-- 🔴 **LATE / OVERHEATED** — цена уже убежала
-
-**Важно:** это образовательный инструмент, не финансовый совет.
-
----
-
-### 🇬🇧 Simple explanation
-
-This app does NOT predict the future.  
-It scans for **high-probability trading setups** using momentum, volume, liquidity and macro market context.
-
-Use it to find ideas, not blind buy signals. This version uses practical/softer BUY ZONE logic, so it is less strict than the previous version.
-""")
-
 # ---------- MACRO APIs ----------
+
 @st.cache_data(ttl=300)
 def load_fear_greed():
     try:
@@ -471,35 +441,51 @@ def load_market(currency, scan_size):
 
     url = "https://api.coingecko.com/api/v3/coins/markets"
 
-    params = {
-        "vs_currency": currency,
-        "order": "market_cap_desc",
-        "per_page": scan_size,
-        "page": 1,
-        "sparkline": "false",
-        "price_change_percentage": "1h,24h,7d"
-    }
-
     headers = {
         "accept": "application/json",
         "User-Agent": "Koshka-Agent"
     }
 
+    all_data = []
+    per_page = 250
+    pages_needed = (scan_size + per_page - 1) // per_page
+
     try:
-        response = requests.get(
-            url,
-            params=params,
-            headers=headers,
-            timeout=20
-        )
+        for page in range(1, pages_needed + 1):
 
-        if response.status_code == 429:
-            return {"error": "API limit reached. Please wait a few minutes and refresh."}
+            params = {
+                "vs_currency": currency,
+                "order": "market_cap_desc",
+                "per_page": per_page,
+                "page": page,
+                "sparkline": "false",
+                "price_change_percentage": "1h,24h,7d"
+            }
 
-        if response.status_code != 200:
-            return {"error": f"API error {response.status_code}"}
+            response = requests.get(
+                url,
+                params=params,
+                headers=headers,
+                timeout=20
+            )
 
-        return {"data": response.json()}
+            if response.status_code == 429:
+                return {"error": "API limit reached. Please wait a few minutes and refresh."}
+
+            if response.status_code != 200:
+                return {"error": f"API error {response.status_code}"}
+
+            page_data = response.json()
+
+            if not page_data:
+                break
+
+            all_data.extend(page_data)
+
+        if not all_data:
+            return {"error": "No market data returned. Please refresh later."}
+
+        return {"data": all_data[:scan_size]}
 
     except Exception as e:
         return {"error": str(e)}
@@ -678,15 +664,15 @@ def entry_quality(coin):
     proxy = coin["momentum_proxy"]
 
     if 0.2 <= ch1 <= 3.5 and 0.5 <= ch24 <= 10 and ch7 <= 35 and proxy <= 74:
-        return "🟢 Good Early Setup", "green", "Рост только формируется — пока это не выглядит поздним входом."
+        return "🟢 Early", "green", "Хороший ранний момент: движение только формируется."
 
     if ch24 > 12 or ch7 > 35 or proxy > 78 or ch1 > 5:
-        return "🔴 Too Late / Overheated", "red", "Цена уже сильно выросла. Покупать сейчас может быть поздно."
+        return "🔴 Too Late", "red", "Цена уже сильно выросла — вход может быть поздним."
 
     if ch24 >= 0 and proxy >= 40:
-        return "🟡 Not Best Time Yet", "yellow", "Не лучший момент для покупки. Лучше наблюдать или ждать цену лучше."
+        return "🟡 Wait For Better Entry", "yellow", "Пока не лучший вход. Лучше ждать цену лучше или подтверждение."
 
-    return "🔴 Weak Setup", "red", "Пока слабый setup. Лучше не спешить."
+    return "🔴 Bad Timing", "red", "Сейчас слабый момент для входа."
 
 def risk_level(coin):
     ch24 = coin["24h"]
@@ -719,59 +705,94 @@ def risk_level(coin):
     if risk_points >= 6:
         return "🔴 High Risk", "red"
     if risk_points >= 3:
-        return "🟡 Medium Risk", "yellow"
-    return "🟢 Normal Risk", "green"
+        return "🟡 Elevated Risk", "yellow"
+    return "🟢 Average Risk", "green"
 
-def exit_signal(coin, fg=None):
+def what_to_do(coin, fg=None):
+    """Immediate action for this coin right now.
+    This is NOT an exit/sell signal. It answers: what should I do with this coin now?
+    """
+    score = coin.get("score", 0)
+    eq, _, _ = entry_quality(coin)
+    risk, _ = risk_level(coin)
+
+    if "Too Late" in eq:
+        return "⏳ Wait", "yellow", "Цена уже убежала. Лучше ждать откат или новый setup."
+
+    if "High Risk" in risk:
+        return "🚫 Skip This Coin", "red", "Риск высокий — лучше пропустить сейчас."
+
+    if score >= 68 and "Early" in eq:
+        return "🛒 Small Entry Possible", "green", "Можно рассмотреть маленький осторожный вход, не all-in."
+
+    if score >= 50:
+        return "👀 Add To Watchlist", "green", "Монета не плохая, но сильного сигнала на вход пока нет."
+
+    return "👀 Add To Watchlist", "green", "Сильного сигнала на действие нет — просто наблюдать."
+
+
+def profit_status(coin, fg=None):
+    """Exit/profit assessment for someone who already holds the coin.
+    This answers: hold, consider taking profit, or take profit?
+    """
     ch1 = coin["1h"]
     ch24 = coin["24h"]
     ch7 = coin["7d"]
     proxy = coin["momentum_proxy"]
-
     fg_value = fg["value"] if fg else None
 
     if ch24 > 18 or ch7 > 45 or proxy > 85:
-        return "💰 Take Profit", "red", "Монета выглядит перегретой — логично фиксировать часть прибыли."
+        return "🔴 Take Profit", "red", "Монета выглядит перегретой. Если уже держишь — можно фиксировать часть прибыли."
 
     if fg_value and fg_value >= 75 and ch24 > 8:
-        return "💰 Take Some Profit", "yellow", "Рынок в жадности, а монета уже выросла — осторожно."
+        return "🟡 Consider Taking Profit", "yellow", "Рынок в жадности, монета уже выросла — можно забрать часть прибыли."
 
     if ch24 < -6 or ch1 < -3:
-        return "🔴 Exit / Avoid", "red", "Momentum сломался — риск падения выше."
+        return "🔴 Exit / Avoid", "red", "Momentum сломался — риск дальнейшего падения выше."
 
-    return "👀 Just Watch For Now", "green", "Нет сильного exit-сигнала."
+    return "🟢 Hold / No Exit Signal", "green", "Сильного сигнала на выход нет. Можно просто наблюдать."
+
+
+def exit_signal(coin, fg=None):
+    # Backward-compatible alias for older parts of the app.
+    return profit_status(coin, fg)
 
 def trade_action(coin, fg=None, btc_global=None):
     score = coin["score"]
     eq, _, _ = entry_quality(coin)
     risk, _ = risk_level(coin)
-    ex, _, _ = exit_signal(coin, fg)
+    ps, _, _ = profit_status(coin, fg)
 
     market_bias, _, _ = get_market_bias(fg, btc_global)
 
-    overheated = "Overheated" in eq or "TAKE" in ex
+    overheated = "Too Late" in eq or "Take Profit" in ps
     high_risk = "High Risk" in risk
 
     if overheated and score >= 65:
         return "💰 Take Profit / Don’t Chase", "red", "Цена уже убежала. Лучше не покупать на FOMO."
 
     if high_risk and score < 85:
-        return "🚩 Avoid", "red", "Setup может быть интересным, но риск слишком высокий."
+        return "🔴 AVOID", "red", "Setup может быть интересным, но риск слишком высокий."
 
     if score >= 68 and "Good Early Setup" in eq and not high_risk:
         if market_bias in ["ALT_FRIENDLY", "ACCUMULATION", "MIXED"]:
-            return "👀 Looks Interesting", "green", "High-probability setup: early momentum, volume and acceptable risk."
-        return "👀 Watch This One", "yellow", "Coin setup хороший, но macro market не идеальный."
+            return "🟢 GOOD SETUP", "green", "Монета выглядит интересно: есть ранний momentum, объём и приемлемый риск."
+        return "🟡 WATCH", "yellow", "Setup неплохой, но рынок сейчас не идеальный."
 
     if score >= 55:
-        return "👀 Watch This One", "yellow", "Монета интересная, но лучше ждать подтверждение или откат."
+        return "🟡 WATCH", "yellow", "Монета интересная, но лучше ждать подтверждение или откат."
 
-    return "🚩 Avoid", "red", "Слабый setup или слишком высокий риск."
+    return "🔴 AVOID", "red", "Слабый setup или слишком высокий риск."
 
 def trade_plan(coin, action):
+    """Always calculate reference levels for the selected coin.
+    The user may already hold the coin or may only be watching it, so Stop/TP1/TP2
+    should always be visible as reference levels, not only when the app says BUY.
+    """
     price = coin["price"]
     risk, _ = risk_level(coin)
     eq, _, _ = entry_quality(coin)
+    ps, _, _ = profit_status(coin, fg)
 
     if price is None or price <= 0:
         return {
@@ -779,87 +800,73 @@ def trade_plan(coin, action):
             "stop": "N/A",
             "tp1": "N/A",
             "tp2": "N/A",
-            "note_ru": "Нет цены для расчёта.",
-            "note_en": "No price available."
+            "stop_pct": "N/A",
+            "tp1_pct": "N/A",
+            "tp2_pct": "N/A",
+            "note_ru": "Нет цены для расчёта уровней.",
+            "note_en": "No price available to calculate levels."
         }
 
-    if "Looks Interesting" in action:
-        if "Normal Risk" in risk:
-            stop_pct = 5
-            tp1_pct = 6
-            tp2_pct = 12
-        elif "Medium Risk" in risk:
-            stop_pct = 7
-            tp1_pct = 8
-            tp2_pct = 15
-        else:
-            stop_pct = 10
-            tp1_pct = 10
-            tp2_pct = 20
+    # Risk-based reference levels from current price.
+    # These are simple educational levels, not a trading recommendation.
+    if "High Risk" in risk:
+        stop_pct = 10
+        tp1_pct = 8
+        tp2_pct = 15
+    elif "Elevated Risk" in risk:
+        stop_pct = 7
+        tp1_pct = 8
+        tp2_pct = 15
+    else:
+        stop_pct = 5
+        tp1_pct = 6
+        tp2_pct = 12
 
-        return {
-            "entry": f"👀 Possible buy near {fmt(price)}",
-            "stop": fmt(price * (1 - stop_pct / 100)),
-            "tp1": fmt(price * (1 + tp1_pct / 100)),
-            "tp2": fmt(price * (1 + tp2_pct / 100)),
-            "note_ru": f"Осторожный вход частями. Stop примерно -{stop_pct}%, take profit частями.",
-            "note_en": f"Small staged entry. Stop around -{stop_pct}%, take profit in parts."
-        }
+    stop_price = price * (1 - stop_pct / 100)
+    tp1_price = price * (1 + tp1_pct / 100)
+    tp2_price = price * (1 + tp2_pct / 100)
 
-    if "Watch This One" in action:
-        return {
-            "entry": "⏳ Better to wait",
-            "stop": "Not needed yet",
-            "tp1": "Too early",
-            "tp2": "Too early",
-            "note_ru": "Монета интересная, но сейчас лучше не спешить. Ждём цену лучше или более сильное подтверждение.",
-            "note_en": "Interesting coin, but better not to rush now."
-        }
-
-    if "Take Profit" in action:
-        return {
-            "entry": "⚠️ Too late to buy",
-            "stop": "N/A",
-            "tp1": "Consider partial profit",
-            "tp2": "Avoid late FOMO",
-            "note_ru": "Поздний вход опасен. Если уже есть позиция — можно фиксировать часть прибыли.",
-            "note_en": "Late entry is risky. If already holding, consider partial profit."
-        }
+    if "GOOD SETUP" in action:
+        entry_text = f"🛒 Current / near {fmt(price)}"
+        note_ru = f"Если входишь сейчас — лучше маленькой суммой и частями. Stop ~-{stop_pct}%, TP1 +{tp1_pct}%, TP2 +{tp2_pct}%."
+        note_en = f"If entering now, use small staged entry. Stop ~-{stop_pct}%, TP1 +{tp1_pct}%, TP2 +{tp2_pct}%."
+    elif "WATCH" in action:
+        entry_text = f"👀 Watch near {fmt(price)}"
+        note_ru = f"Setup не идеальный, но уровни всё равно рассчитаны от текущей цены: Stop ~-{stop_pct}%, TP1 +{tp1_pct}%, TP2 +{tp2_pct}%."
+        note_en = f"Setup is not ideal, but reference levels are calculated from current price: Stop ~-{stop_pct}%, TP1 +{tp1_pct}%, TP2 +{tp2_pct}%."
+    elif "Take Profit" in action or "Take Profit" in ps:
+        entry_text = f"⚠️ Current {fmt(price)}"
+        note_ru = f"Цена может быть перегрета. Если уже держишь — TP/exit логика важнее нового входа. Reference Stop ~-{stop_pct}%, TP1 +{tp1_pct}%, TP2 +{tp2_pct}%."
+        note_en = f"Coin may be overheated. If already holding, profit/exit logic matters more than new entry. Reference Stop ~-{stop_pct}%, TP1 +{tp1_pct}%, TP2 +{tp2_pct}%."
+    else:
+        entry_text = f"🚫 Avoid new entry near {fmt(price)}"
+        note_ru = f"Для нового входа setup слабый, но если монета уже куплена — можно использовать ориентиры: Stop ~-{stop_pct}%, TP1 +{tp1_pct}%, TP2 +{tp2_pct}%."
+        note_en = f"For a new entry the setup is weak, but if already holding, use reference levels: Stop ~-{stop_pct}%, TP1 +{tp1_pct}%, TP2 +{tp2_pct}%."
 
     return {
-        "entry": "Avoid",
-        "stop": "N/A",
-        "tp1": "N/A",
-        "tp2": "N/A",
-        "note_ru": "Setup слабый или риск высокий.",
-        "note_en": "Weak setup or high risk."
+        "entry": entry_text,
+        "stop": f"{fmt(stop_price)} ({stop_pct}% below)",
+        "tp1": f"{fmt(tp1_price)} (+{tp1_pct}%)",
+        "tp2": f"{fmt(tp2_price)} (+{tp2_pct}%)",
+        "stop_pct": stop_pct,
+        "tp1_pct": tp1_pct,
+        "tp2_pct": tp2_pct,
+        "note_ru": note_ru,
+        "note_en": note_en
     }
-
 
 def plan_explanation(plan_key, action):
     if plan_key == "entry":
-        if "Looks Interesting" in action:
-            return "Можно рассмотреть осторожный вход небольшой суммой. Не all-in."
-        if "Watch This One" in action:
-            return "Монета интересная, но сейчас не лучший момент для покупки. Лучше подождать цену ниже или более сильный сигнал."
-        if "Take Profit" in action:
-            return "Цена уже сильно выросла. Покупать сейчас опасно — это может быть FOMO."
-        return "Лучше пропустить эту монету сейчас."
+        return "Текущая цена выбранной монеты. Уровни ниже рассчитаны от неё, потому что мы не знаем, ты уже купила или только смотришь."
 
     if plan_key == "stop":
-        if "Looks Interesting" in action:
-            return "Stop Loss — цена, где лучше выйти, если идея оказалась неправильной."
-        return "Stop считается только когда есть точка входа. Пока входа нет — стоп не нужен."
+        return "Stop — ориентир, где идея становится неправильной. Особенно полезно, если монета уже куплена."
 
     if plan_key == "tp1":
-        if "Looks Interesting" in action:
-            return "TP1 — первый уровень, где можно частично зафиксировать прибыль."
-        return "TP1 появится только после нормальной точки входа."
+        return "TP1 — первый уровень частичной фиксации прибыли. Не обязательно продавать всё."
 
     if plan_key == "tp2":
-        if "Looks Interesting" in action:
-            return "TP2 — второй уровень прибыли, если рост продолжится."
-        return "TP2 пока рано считать, потому что вход ещё не подтверждён."
+        return "TP2 — второй уровень прибыли, если движение продолжится."
 
     return ""
 
@@ -1063,7 +1070,10 @@ for coin in market_data:
     signal["signal"], signal["signal_color"] = signal_decision(signal["score"])
     signal["entry_quality"], signal["entry_color"], signal["entry_reason"] = entry_quality(signal)
     signal["risk_level"], signal["risk_color"] = risk_level(signal)
-    signal["exit_signal"], signal["exit_color"], signal["exit_reason"] = exit_signal(signal, fg)
+    signal["what_to_do"], signal["what_color"], signal["what_reason"] = what_to_do(signal, fg)
+    signal["profit_status"], signal["profit_color"], signal["profit_reason"] = profit_status(signal, fg)
+    # Keep old names for export/table compatibility, but they now mean Profit Status.
+    signal["exit_signal"], signal["exit_color"], signal["exit_reason"] = signal["profit_status"], signal["profit_color"], signal["profit_reason"]
     signal["action"], signal["action_color"], signal["action_reason"] = trade_action(signal, fg, btc_global)
     signal["plan"] = trade_plan(signal, signal["action"])
 
@@ -1073,34 +1083,37 @@ signals = sorted(signals, key=lambda x: x["score"], reverse=True)
 
 filtered_signals = [s for s in signals if s["score"] >= min_score_filter]
 
-if not filtered_signals:
-    st.warning("No coins match the selected minimum score. Try lowering the score filter.")
-    st.stop()
-
-best = filtered_signals[0]
+# Part 1: selected coin analysis uses ALL loaded coins.
+# Part 2: market scanner uses only coins passing the score filter.
+best = filtered_signals[0] if filtered_signals else None
 top10 = filtered_signals[:10]
 
-# ---------- SELECTED COIN ----------
+# ---------- PART 1: SELECTED COIN ANALYSIS ----------
 html("""
 <div class="card">
     <div style="font-size:34px; font-weight:900; color:white;">
         🧠 Coin Analysis / Анализ монеты
     </div>
     <div class="small-muted" style="margin-top:10px;">
-        Choose any coin to see action, entry quality, exit signal and trade plan.
+        Part 1: analyze any coin from the loaded market list. This is independent from the Top Setups scanner filter.
     </div>
 </div>
 """)
 
-coin_options = {s["id"]: s for s in filtered_signals}
+coin_options = {s["id"]: s for s in signals}
 coin_ids = list(coin_options.keys())
 
-default_coin_id = best["id"]
+# Default to real Bitcoin if it is loaded, otherwise first available coin.
+default_coin_id = "bitcoin" if "bitcoin" in coin_options else coin_ids[0]
+
+# If the previous selection disappears after changing scan size/currency, reset safely.
+if "coin_selector" in st.session_state and st.session_state["coin_selector"] not in coin_options:
+    st.session_state["coin_selector"] = default_coin_id
 
 selected_coin_id = st.selectbox(
     "Choose coin / Выбери монету",
     coin_ids,
-    index=coin_ids.index(default_coin_id),
+    index=coin_ids.index(st.session_state.get("coin_selector", default_coin_id)),
     format_func=lambda coin_id:
         f"{coin_options[coin_id]['symbol']} — {coin_options[coin_id]['coin']}",
     key="coin_selector"
@@ -1145,9 +1158,9 @@ with left:
 with right:
     html(f"""
     <div class="card">
-        <span class="badge {selected["action_color"]}">{selected["action"]}</span>
-        <h2>Should I care about this coin?</h2>
-        <h3>Setup Score: {selected["score"]}/100</h3>
+        <h2>🎯 Coin Setup</h2>
+        <span class="badge {selected["action_color"]}" style="font-size:22px; padding:14px 24px;">{selected["action"]}</span>
+        <h3>Score: {selected["score"]}/100</h3>
 
         <div class="reason-row">
             <span class="reason-label">Buy Timing:</span><br>
@@ -1162,12 +1175,18 @@ with right:
 
         <div class="reason-row">
             <span class="reason-label">What To Do:</span><br>
-            <span class="badge {selected["exit_color"]}">{selected["exit_signal"]}</span><br>
-            <span style="font-size:14px;">{selected["exit_reason"]}</span>
+            <span class="badge {selected["what_color"]}">{selected["what_to_do"]}</span><br>
+            <span style="font-size:14px;">{selected["what_reason"]}</span>
+        </div>
+
+        <div class="reason-row">
+            <span class="reason-label">Profit Status / Exit:</span><br>
+            <span class="badge {selected["profit_color"]}">{selected["profit_status"]}</span><br>
+            <span style="font-size:14px;">{selected["profit_reason"]}</span>
         </div>
 
         <div class="info-box">
-            <b>Простыми словами:</b><br>
+            <b>Final answer / Итог:</b><br>
             {selected["action_reason"]}
         </div>
     </div>
@@ -1176,7 +1195,8 @@ with right:
 # ---------- TRADE PLAN ----------
 plan = selected["plan"]
 
-st.subheader("🧾 Simple Action Plan / Простой план")
+st.subheader("🧾 Action Plan / План по выбранной монете")
+st.caption("Levels are always shown because you may already hold this coin or may only be watching it. Educational only, not financial advice.")
 
 tp1, tp2, tp3, tp4 = st.columns(4)
 
@@ -1250,64 +1270,72 @@ html(f"""
 </div>
 """)
 
-# ---------- BEST SETUP ----------
-st.subheader("🔥 Best Setup Now")
+# ---------- PART 2: MARKET SCANNER ----------
+st.divider()
+st.subheader("🔎 Market Scanner / Лучшие варианты")
+st.caption("Part 2 scans the loaded market and shows only coins above the Scanner Minimum Score.")
 
-b1, b2 = st.columns([3, 1])
+if not filtered_signals:
+    st.warning("No coins match the selected scanner score. Lower Scanner Minimum Score to see market setups.")
+    rows = []
+else:
+    st.subheader("🔥 Best Setup Now")
 
-with b1:
-    html(f"""
-    <div class="card">
-        <span class="badge {best["action_color"]}">{best["action"]}</span>
-        <h1>{best["symbol"]} — {best["coin"]}</h1>
-        <div class="price">{fmt(best["price"])} {currency.upper()}</div>
-        <div class="{'metric-positive' if best["24h"] >= 0 else 'metric-negative'}">24h: {best["24h"]:.2f}%</div>
-        <br>
-        <div class="small-muted">
-            Score: {best["score"]}/100 &nbsp;&nbsp;|&nbsp;&nbsp;
-            Entry: {best["entry_quality"]} &nbsp;&nbsp;|&nbsp;&nbsp;
-            Risk: {best["risk_level"]} &nbsp;&nbsp;|&nbsp;&nbsp;
-            Exit: {best["exit_signal"]}
-        </div>
-        <div class="info-box">
-            {best["action_reason"]}
-        </div>
-        <br>
-        <div class="small-muted"><b>Trade Plan:</b><br>
-        Entry: {best["plan"]["entry"]}<br>
-        Stop: {best["plan"]["stop"]}<br>
-        TP1: {best["plan"]["tp1"]}<br>
-        TP2: {best["plan"]["tp2"]}
-        </div>
+    b1, b2 = st.columns([3, 1])
+
+    with b1:
+        html(f"""
+<div class="card">
+    <span class="badge {best["action_color"]}">{best["action"]}</span>
+    <h1>{best["symbol"]} — {best["coin"]}</h1>
+    <div class="price">{fmt(best["price"])} {currency.upper()}</div>
+    <div class="{'metric-positive' if best["24h"] >= 0 else 'metric-negative'}">24h: {best["24h"]:.2f}%</div>
+    <br>
+    <div class="small-muted">
+        Score: {best["score"]}/100 &nbsp;&nbsp;|&nbsp;&nbsp;
+        Entry: {best["entry_quality"]} &nbsp;&nbsp;|&nbsp;&nbsp;
+        Risk: {best["risk_level"]} &nbsp;&nbsp;|&nbsp;&nbsp;
+        Profit Status: {best["profit_status"]}
     </div>
-    """)
+    <div class="info-box">
+        {best["action_reason"]}
+    </div>
+    <br>
+    <div class="small-muted"><b>Trade Plan:</b><br>
+    Entry: {best["plan"]["entry"]}<br>
+    Stop: {best["plan"]["stop"]}<br>
+    TP1: {best["plan"]["tp1"]}<br>
+    TP2: {best["plan"]["tp2"]}
+    </div>
+</div>
+        """)
 
-with b2:
-    if cat_orange.exists():
-        st.image(str(cat_orange), width=220)
-    else:
-        st.markdown("🐈")
+    with b2:
+        if cat_orange.exists():
+            st.image(str(cat_orange), width=220)
+        else:
+            st.markdown("🐈")
 
-# ---------- TOP SETUPS TABLE ----------
-st.subheader("🏆 Top Setups")
+    # ---------- TOP SETUPS TABLE ----------
+    st.subheader("🏆 Top Setups")
 
-rows = []
+    rows = []
 
-for s in top10:
-    rows.append({
-        "Coin": f"{s['symbol']} — {s['coin']}",
-        "Price": f"{fmt(s['price'])} {currency.upper()}",
-        "1h %": round(s["1h"], 2),
-        "24h %": round(s["24h"], 2),
-        "7d %": round(s["7d"], 2),
-        "Vol/MCap": f"{s['volume_ratio']:.2%}",
-        "Momentum": s["momentum_proxy"],
-        "Score": s["score"],
-        "Action": s["action"],
-        "Entry": s["entry_quality"].replace("Good Early Setup", "Early").replace("Not Best Time Yet", "Wait").replace("Weak Setup", "Weak"),
-        "Risk": s["risk_level"],
-        "Exit": s["exit_signal"]
-    })
+    for s in top10:
+        rows.append({
+            "Coin": f"{s['symbol']} — {s['coin']}",
+            "Price": f"{fmt(s['price'])} {currency.upper()}",
+            "1h %": round(s["1h"], 2),
+            "24h %": round(s["24h"], 2),
+            "7d %": round(s["7d"], 2),
+            "Vol/MCap": f"{s['volume_ratio']:.2%}",
+            "Momentum": s["momentum_proxy"],
+            "Score": s["score"],
+            "Action": s["action"],
+            "Entry": s["entry_quality"].replace("Wait For Better Entry", "Wait").replace("Bad Timing", "Bad"),
+            "Risk": s["risk_level"],
+            "Exit": s["exit_signal"]
+        })
 
 st.dataframe(
     pd.DataFrame(rows),
@@ -1320,7 +1348,7 @@ csv_df = pd.DataFrame(rows)
 csv = csv_df.to_csv(index=False).encode("utf-8")
 
 st.download_button(
-    label="📥 Download Top Setups CSV",
+    label="📥 Download Scanner Results CSV",
     data=csv,
     file_name="koshka_top_setups.csv",
     mime="text/csv"
