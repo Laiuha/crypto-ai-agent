@@ -27,7 +27,7 @@ html("""
     #0b1020;
 }
 
-.hero, .card, .settings-box {
+.hero, .card, .settings-box, .macro-box {
     background: linear-gradient(135deg,#182035,#25314f);
     border-radius: 28px;
     padding: 28px;
@@ -81,6 +81,25 @@ html("""
     font-size: 17px;
 }
 
+.macro-value {
+    font-size: 42px;
+    font-weight: 900;
+    color: white;
+    margin: 8px 0;
+}
+
+.macro-label {
+    color: #b0b8d1;
+    font-size: 15px;
+    margin-bottom: 6px;
+}
+
+.macro-desc {
+    font-size: 16px;
+    font-weight: 700;
+    margin-top: 4px;
+}
+
 .badge {
     display:inline-block;
     padding:10px 18px;
@@ -90,20 +109,15 @@ html("""
     margin-bottom:18px;
 }
 
-.green {
-    background:#064e3b;
-    color:#86efac;
-}
+.green { background:#064e3b; color:#86efac; }
+.yellow { background:#713f12; color:#fde68a; }
+.red { background:#7f1d1d; color:#fca5a5; }
 
-.yellow {
-    background:#713f12;
-    color:#fde68a;
-}
-
-.red {
-    background:#7f1d1d;
-    color:#fca5a5;
-}
+.fg-extreme-fear { color: #f87171; }
+.fg-fear { color: #fb923c; }
+.fg-neutral { color: #facc15; }
+.fg-greed { color: #a3e635; }
+.fg-extreme-greed { color: #4ade80; }
 </style>
 """)
 
@@ -170,6 +184,12 @@ The scanner analyzes:
 - liquidity
 - market cap
 
+**Macro Context**
+
+- 😱 **Fear & Greed Index** — 0–24 = Extreme Fear (historically good to accumulate), 75–100 = Extreme Greed (consider taking profits)
+- 🟠 **BTC Dominance** — when dominance drops, altcoins tend to outperform. When it rises, BTC leads.
+- 💰 **Total Market Cap** — overall size of the crypto market
+
 **Signals**
 
 🟢 **STRONG SIGNAL** → strongest current setup
@@ -182,7 +202,157 @@ Instead, it uses a transparent **Momentum Proxy** based on real 1h / 24h / 7d pr
 Educational only. Not financial advice.
 """)
 
-# ---------- API ----------
+# ---------- MACRO APIs ----------
+@st.cache_data(ttl=300)
+def load_fear_greed():
+    try:
+        r = requests.get(
+            "https://api.alternative.me/fng/?limit=1",
+            timeout=10
+        )
+        if r.status_code == 200:
+            data = r.json()
+            item = data["data"][0]
+            return {
+                "value": int(item["value"]),
+                "label": item["value_classification"]
+            }
+    except Exception:
+        pass
+    return None
+
+@st.cache_data(ttl=300)
+def load_btc_dominance():
+    try:
+        r = requests.get(
+            "https://api.coingecko.com/api/v3/global",
+            headers={"User-Agent": "Koshka-Agent"},
+            timeout=10
+        )
+        if r.status_code == 200:
+            data = r.json()
+            btc_dom = data["data"]["market_cap_percentage"].get("btc", None)
+            total_mcap = data["data"].get("total_market_cap", {}).get("usd", None)
+            return {
+                "btc_dominance": round(btc_dom, 1) if btc_dom else None,
+                "total_mcap": total_mcap
+            }
+    except Exception:
+        pass
+    return None
+
+# ---------- MACRO SECTION ----------
+fg = load_fear_greed()
+btc_global = load_btc_dominance()
+
+st.subheader("🌐 Macro Market Context")
+
+m1, m2, m3 = st.columns(3)
+
+with m1:
+    if fg:
+        val = fg["value"]
+        label = fg["label"]
+
+        if val <= 24:
+            fg_class = "fg-extreme-fear"
+            fg_advice = "Extreme Fear — historically good time to accumulate"
+            fg_emoji = "😱"
+        elif val <= 44:
+            fg_class = "fg-fear"
+            fg_advice = "Fear — market cautious, watch for reversals"
+            fg_emoji = "😰"
+        elif val <= 55:
+            fg_class = "fg-neutral"
+            fg_advice = "Neutral — no strong macro signal"
+            fg_emoji = "😐"
+        elif val <= 74:
+            fg_class = "fg-greed"
+            fg_advice = "Greed — momentum strong, but stay alert"
+            fg_emoji = "😏"
+        else:
+            fg_class = "fg-extreme-greed"
+            fg_advice = "Extreme Greed — consider taking profits"
+            fg_emoji = "🤑"
+
+        html(f"""
+        <div class="macro-box">
+            <div class="macro-label">{fg_emoji} Fear & Greed Index</div>
+            <div class="macro-value {fg_class}">{val}</div>
+            <div class="macro-desc {fg_class}">{label}</div>
+            <br>
+            <div class="small-muted">{fg_advice}</div>
+        </div>
+        """)
+    else:
+        html("""
+        <div class="macro-box">
+            <div class="macro-label">😱 Fear & Greed Index</div>
+            <div class="small-muted">Unavailable</div>
+        </div>
+        """)
+
+with m2:
+    if btc_global and btc_global["btc_dominance"]:
+        dom = btc_global["btc_dominance"]
+
+        if dom >= 55:
+            dom_class = "fg-fear"
+            dom_advice = "High BTC dominance — altcoins underperforming BTC"
+            dom_emoji = "🟠"
+        elif dom >= 48:
+            dom_class = "fg-neutral"
+            dom_advice = "Balanced dominance — mixed signals for alts"
+            dom_emoji = "⚖️"
+        else:
+            dom_class = "fg-greed"
+            dom_advice = "Low BTC dominance — altcoin season likely in play"
+            dom_emoji = "🚀"
+
+        html(f"""
+        <div class="macro-box">
+            <div class="macro-label">{dom_emoji} BTC Dominance</div>
+            <div class="macro-value {dom_class}">{dom}%</div>
+            <br>
+            <div class="small-muted">{dom_advice}</div>
+        </div>
+        """)
+    else:
+        html("""
+        <div class="macro-box">
+            <div class="macro-label">🟠 BTC Dominance</div>
+            <div class="small-muted">Unavailable</div>
+        </div>
+        """)
+
+with m3:
+    if btc_global and btc_global["total_mcap"]:
+        mcap = btc_global["total_mcap"]
+
+        if mcap >= 1_000_000_000_000:
+            mcap_str = f"${mcap / 1_000_000_000_000:.2f}T"
+        else:
+            mcap_str = f"${mcap / 1_000_000_000:.0f}B"
+
+        html(f"""
+        <div class="macro-box">
+            <div class="macro-label">💰 Total Crypto Market Cap</div>
+            <div class="macro-value">{mcap_str}</div>
+            <br>
+            <div class="small-muted">Global crypto market size</div>
+        </div>
+        """)
+    else:
+        html("""
+        <div class="macro-box">
+            <div class="macro-label">💰 Total Market Cap</div>
+            <div class="small-muted">Unavailable</div>
+        </div>
+        """)
+
+st.divider()
+
+# ---------- MARKET API ----------
 @st.cache_data(ttl=300)
 def load_market(currency, scan_size):
 
