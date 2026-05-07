@@ -118,11 +118,139 @@ html("""
 .fg-neutral { color: #facc15; }
 .fg-greed { color: #a3e635; }
 .fg-extreme-greed { color: #4ade80; }
+
+.warning-box {
+    background: rgba(251,146,60,0.12);
+    border: 1px solid #fb923c;
+    border-radius: 14px;
+    padding: 14px 18px;
+    margin-top: 14px;
+    color: #fed7aa;
+    font-size: 15px;
+}
+
+.info-box {
+    background: rgba(99,102,241,0.12);
+    border: 1px solid #6366f1;
+    border-radius: 14px;
+    padding: 14px 18px;
+    margin-top: 14px;
+    color: #c7d2fe;
+    font-size: 15px;
+}
+
+.macro-summary-box {
+    background: rgba(16,185,129,0.10);
+    border: 1px solid #10b981;
+    border-radius: 18px;
+    padding: 18px 22px;
+    margin-top: 10px;
+    color: #a7f3d0;
+    font-size: 16px;
+}
+
+.reason-row {
+    padding: 7px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    color: #b0b8d1;
+    font-size: 16px;
+}
+
+.reason-label {
+    color: white;
+    font-weight: 700;
+}
 </style>
 """)
 
 cat_black = Path("cat_black.png")
 cat_orange = Path("cat_orange.png")
+
+# ---------- REASON EXPLANATIONS (bilingual) ----------
+REASON_EXPLAIN = {
+    "early 1h momentum": (
+        "early 1h momentum",
+        "Цена растёт последний час — возможно начало движения. / "
+        "Price rising in the last hour — possible start of a move."
+    ),
+    "healthy 24h move": (
+        "healthy 24h move",
+        "Рост за 24ч умеренный — не слишком много, не слишком мало. / "
+        "24h gain is moderate — not too much, not too little."
+    ),
+    "healthy momentum": (
+        "healthy momentum",
+        "Общий импульс монеты в здоровом диапазоне. / "
+        "Overall coin momentum is in a healthy range."
+    ),
+    "momentum overheated": (
+        "momentum overheated ⚠️",
+        "Монета выросла слишком быстро — риск отката. / "
+        "Coin rose too fast — pullback risk is high."
+    ),
+    "weak momentum": (
+        "weak momentum",
+        "Импульс слабый — монета не двигается активно. / "
+        "Momentum is weak — coin is not moving actively."
+    ),
+    "strong volume activity": (
+        "strong volume activity",
+        "Много людей торгуют этой монетой прямо сейчас — сильный интерес. / "
+        "Many people are trading this coin right now — strong interest."
+    ),
+    "normal volume activity": (
+        "normal volume activity",
+        "Объём торгов нормальный — стандартная активность. / "
+        "Trading volume is normal — standard activity."
+    ),
+    "weak volume activity": (
+        "weak volume activity ⚠️",
+        "Мало торгов — монету могут легко двигать крупные игроки. / "
+        "Low trading — big players can easily move this coin."
+    ),
+    "good liquidity": (
+        "good liquidity",
+        "Монета крупная — проще купить и продать без большого проскальзывания. / "
+        "Large coin — easier to buy and sell without big slippage."
+    ),
+    "already pumped too much": (
+        "already pumped too much ⛔",
+        "Монета уже очень сильно выросла за 24ч — поздно входить, риск отката. / "
+        "Coin already pumped heavily in 24h — late entry, high reversal risk."
+    ),
+    "24h move overextended": (
+        "24h move overextended ⚠️",
+        "Рост за 24ч превысил здоровый предел для выбранного режима риска. / "
+        "24h move exceeded the healthy limit for your chosen risk mode."
+    ),
+    "7d overheated": (
+        "7d overheated ⚠️",
+        "За последнюю неделю монета выросла слишком сильно — осторожно. / "
+        "Coin rose too much over the last week — be careful."
+    ),
+    "falling momentum": (
+        "falling momentum ⛔",
+        "Монета падает — входить против тренда очень рискованно. / "
+        "Coin is falling — entering against the trend is very risky."
+    ),
+    "no strong setup": (
+        "no strong setup",
+        "Нет ни сильных позитивных, ни негативных сигналов — нейтрально. / "
+        "No strong positive or negative signals — neutral."
+    ),
+}
+
+def explain_reasons(reasons):
+    rows = []
+    for r in reasons:
+        label, desc = REASON_EXPLAIN.get(r, (r, ""))
+        rows.append(f"""
+        <div class="reason-row">
+            <span class="reason-label">{label}</span><br>
+            <span style="font-size:14px;">{desc}</span>
+        </div>
+        """)
+    return "".join(rows)
 
 # ---------- HEADER ----------
 h1, h2 = st.columns([1, 5])
@@ -136,8 +264,8 @@ with h2:
     <div class="hero">
         <div class="big-title">Koshka Crypto AI Agent</div>
         <div class="subtitle">
-            AI-assisted crypto momentum scanner using live market data, liquidity and coin health scoring.
-            Educational only — not financial advice.
+            AI-assisted crypto momentum scanner using live market data, liquidity and coin health scoring.<br>
+            Сканер крипто-моментума на живых данных. Только для обучения — не финансовый совет. / Educational only — not financial advice.
         </div>
     </div>
     """)
@@ -145,7 +273,7 @@ with h2:
 # ---------- SETTINGS ----------
 html("""
 <div class="settings-box">
-    <h2>⚙️ Scanner Settings</h2>
+    <h2>⚙️ Scanner Settings / Настройки</h2>
 </div>
 """)
 
@@ -153,51 +281,72 @@ s1, s2, s3 = st.columns(3)
 
 with s1:
     currency = st.selectbox(
-        "💱 Currency",
+        "💱 Currency / Валюта",
         ["usd", "aed", "eur", "gbp", "rub"],
         index=1
     )
 
 with s2:
     risk_mode = st.selectbox(
-        "⚠️ Risk Mode",
+        "⚠️ Risk Mode / Режим риска",
         ["Conservative", "Balanced", "Aggressive"],
         index=1
     )
 
 with s3:
     scan_size = st.selectbox(
-        "🌍 Coins To Scan",
+        "🌍 Coins To Scan / Монет для сканирования",
         [50, 100, 150, 200],
         index=1
     )
 
-with st.expander("❓ Help"):
+with st.expander("❓ Help / Помощь для новичков"):
     st.markdown("""
-**Coin Health Logic**
+### 🇷🇺 Для новичков
 
-The scanner analyzes:
-- 1h momentum
-- 24h trend
-- 7d overheating
-- volume activity
-- liquidity
-- market cap
+**Что такое этот инструмент?**
+Это сканер который смотрит на движение цен криптовалют и выдаёт оценку — насколько интересна монета прямо сейчас по техническим признакам. Это НЕ предсказание будущего.
 
-**Macro Context**
+**Сигналы:**
+- 🟢 **STRONG SIGNAL** — монета показывает хорошие краткосрочные признаки. Не значит "покупай"!
+- 🟡 **NEUTRAL** — интересно, но нет подтверждения
+- 🔴 **HIGH RISK** — слабые или опасные признаки
 
-- 😱 **Fear & Greed Index** — 0–24 = Extreme Fear (historically good to accumulate), 75–100 = Extreme Greed (consider taking profits)
-- 🟠 **BTC Dominance** — when dominance drops, altcoins tend to outperform. When it rises, BTC leads.
-- 💰 **Total Market Cap** — overall size of the crypto market
+**Важные предупреждения:**
+- Маленькие монеты (низкий market cap) могут показывать STRONG SIGNAL но быть очень рискованными
+- Высокий скор = хорошие цифры сейчас, не гарантия роста
+- Всегда проверяй BTC Dominance и Fear & Greed перед решением
 
-**Signals**
+**Fear & Greed Index:**
+- 0–24 😱 Extreme Fear — исторически хорошее время для накопления
+- 25–44 😰 Fear — рынок осторожен
+- 45–55 😐 Neutral — нет сигнала
+- 56–74 😏 Greed — импульс есть, но осторожно
+- 75–100 🤑 Extreme Greed — думай о фиксации прибыли
 
-🟢 **STRONG SIGNAL** → strongest current setup
-🟡 **NEUTRAL** → interesting, but not confirmed
-🔴 **HIGH RISK** → weak / overheated setup
+**BTC Dominance:**
+- >55% → BTC сезон, альты проигрывают
+- 48–55% → смешанные сигналы
+- <48% → альткоин сезон
 
-**Important:** this app does not use real RSI because the free CoinGecko market endpoint does not provide RSI.
-Instead, it uses a transparent **Momentum Proxy** based on real 1h / 24h / 7d price movement.
+---
+
+### 🇬🇧 For beginners
+
+**What is this tool?**
+A scanner that looks at crypto price movements and scores coins by short-term technical signals. This is NOT a prediction of the future.
+
+**Signals:**
+- 🟢 **STRONG SIGNAL** — coin shows good short-term signs. Does NOT mean "buy"!
+- 🟡 **NEUTRAL** — interesting but unconfirmed
+- 🔴 **HIGH RISK** — weak or dangerous signs
+
+**Important warnings:**
+- Small coins (low market cap) can show STRONG SIGNAL but be very risky
+- High score = good numbers right now, not a guarantee of growth
+- Always check BTC Dominance and Fear & Greed before deciding
+
+**This app does not use real RSI** — it uses a transparent Momentum Proxy based on 1h/24h/7d price movement.
 
 Educational only. Not financial advice.
 """)
@@ -245,7 +394,7 @@ def load_btc_dominance():
 fg = load_fear_greed()
 btc_global = load_btc_dominance()
 
-st.subheader("🌐 Macro Market Context")
+st.subheader("🌐 Macro Market Context / Макро контекст рынка")
 
 m1, m2, m3 = st.columns(3)
 
@@ -256,23 +405,28 @@ with m1:
 
         if val <= 24:
             fg_class = "fg-extreme-fear"
-            fg_advice = "Extreme Fear — historically good time to accumulate"
+            fg_advice_en = "Extreme Fear — historically good time to accumulate"
+            fg_advice_ru = "Крайний страх — исторически хорошее время для накопления"
             fg_emoji = "😱"
         elif val <= 44:
             fg_class = "fg-fear"
-            fg_advice = "Fear — market cautious, watch for reversals"
+            fg_advice_en = "Fear — market cautious, watch for reversals"
+            fg_advice_ru = "Страх — рынок осторожен, смотри на развороты"
             fg_emoji = "😰"
         elif val <= 55:
             fg_class = "fg-neutral"
-            fg_advice = "Neutral — no strong macro signal"
+            fg_advice_en = "Neutral — no strong macro signal"
+            fg_advice_ru = "Нейтрально — нет сильного макро-сигнала"
             fg_emoji = "😐"
         elif val <= 74:
             fg_class = "fg-greed"
-            fg_advice = "Greed — momentum strong, but stay alert"
+            fg_advice_en = "Greed — momentum strong, but stay alert"
+            fg_advice_ru = "Жадность — импульс есть, но будь осторожен"
             fg_emoji = "😏"
         else:
             fg_class = "fg-extreme-greed"
-            fg_advice = "Extreme Greed — consider taking profits"
+            fg_advice_en = "Extreme Greed — consider taking profits"
+            fg_advice_ru = "Крайняя жадность — подумай о фиксации прибыли"
             fg_emoji = "🤑"
 
         html(f"""
@@ -281,14 +435,17 @@ with m1:
             <div class="macro-value {fg_class}">{val}</div>
             <div class="macro-desc {fg_class}">{label}</div>
             <br>
-            <div class="small-muted">{fg_advice}</div>
+            <div class="small-muted">
+                🇷🇺 {fg_advice_ru}<br><br>
+                🇬🇧 {fg_advice_en}
+            </div>
         </div>
         """)
     else:
         html("""
         <div class="macro-box">
             <div class="macro-label">😱 Fear & Greed Index</div>
-            <div class="small-muted">Unavailable</div>
+            <div class="small-muted">Unavailable / Недоступно</div>
         </div>
         """)
 
@@ -298,30 +455,36 @@ with m2:
 
         if dom >= 55:
             dom_class = "fg-fear"
-            dom_advice = "High BTC dominance — altcoins underperforming BTC"
+            dom_advice_en = "BTC season — altcoins underperforming Bitcoin"
+            dom_advice_ru = "BTC сезон — альткоины проигрывают биткоину"
             dom_emoji = "🟠"
         elif dom >= 48:
             dom_class = "fg-neutral"
-            dom_advice = "Balanced dominance — mixed signals for alts"
+            dom_advice_en = "Mixed signals — no clear alt or BTC season"
+            dom_advice_ru = "Смешанные сигналы — нет явного сезона"
             dom_emoji = "⚖️"
         else:
             dom_class = "fg-greed"
-            dom_advice = "Low BTC dominance — altcoin season likely in play"
+            dom_advice_en = "Altcoin season — money flowing from BTC to alts"
+            dom_advice_ru = "Альт-сезон — деньги перетекают из BTC в альты"
             dom_emoji = "🚀"
 
         html(f"""
         <div class="macro-box">
-            <div class="macro-label">{dom_emoji} BTC Dominance</div>
+            <div class="macro-label">{dom_emoji} BTC Dominance / Доминация BTC</div>
             <div class="macro-value {dom_class}">{dom}%</div>
             <br>
-            <div class="small-muted">{dom_advice}</div>
+            <div class="small-muted">
+                🇷🇺 {dom_advice_ru}<br><br>
+                🇬🇧 {dom_advice_en}
+            </div>
         </div>
         """)
     else:
         html("""
         <div class="macro-box">
             <div class="macro-label">🟠 BTC Dominance</div>
-            <div class="small-muted">Unavailable</div>
+            <div class="small-muted">Unavailable / Недоступно</div>
         </div>
         """)
 
@@ -336,19 +499,51 @@ with m3:
 
         html(f"""
         <div class="macro-box">
-            <div class="macro-label">💰 Total Crypto Market Cap</div>
+            <div class="macro-label">💰 Total Crypto Market Cap / Общий рынок</div>
             <div class="macro-value">{mcap_str}</div>
             <br>
-            <div class="small-muted">Global crypto market size</div>
+            <div class="small-muted">
+                🇷🇺 Общий размер всего крипто рынка<br><br>
+                🇬🇧 Total size of the entire crypto market
+            </div>
         </div>
         """)
     else:
         html("""
         <div class="macro-box">
             <div class="macro-label">💰 Total Market Cap</div>
-            <div class="small-muted">Unavailable</div>
+            <div class="small-muted">Unavailable / Недоступно</div>
         </div>
         """)
+
+# ---------- COMBINED MACRO SUMMARY ----------
+if fg and btc_global and btc_global["btc_dominance"]:
+    val = fg["value"]
+    dom = btc_global["btc_dominance"]
+
+    if val <= 44 and dom >= 55:
+        summary_ru = "😰🟠 Страх + BTC доминация высокая → BTC сейчас безопаснее альтов. Не лучшее время для мелких монет."
+        summary_en = "Fear + high BTC dominance → BTC is safer than alts right now. Not a great time for small coins."
+    elif val >= 75 and dom < 48:
+        summary_ru = "🤑🚀 Крайняя жадность + альт-сезон → высокий риск, рынок перегрет. Осторожно с новыми позициями."
+        summary_en = "Extreme greed + altcoin season → high risk, market overheated. Be careful with new positions."
+    elif val <= 44 and dom < 48:
+        summary_ru = "😰🚀 Страх + альт-сезон начинается → потенциально интересный момент для осторожного входа в альты."
+        summary_en = "Fear + altcoin season starting → potentially interesting moment for careful alt entries."
+    elif val >= 56 and dom >= 55:
+        summary_ru = "😏🟠 Жадность + BTC доминация высокая → BTC лидирует. Альты отстают."
+        summary_en = "Greed + high BTC dominance → BTC is leading. Alts are lagging."
+    else:
+        summary_ru = "😐 Смешанные сигналы — нет явного направления. Наблюдай, не торопись."
+        summary_en = "Mixed signals — no clear direction. Watch and wait."
+
+    html(f"""
+    <div class="macro-summary-box">
+        <b>🔍 Macro Summary / Макро вывод:</b><br><br>
+        🇷🇺 {summary_ru}<br><br>
+        🇬🇧 {summary_en}
+    </div>
+    """)
 
 st.divider()
 
@@ -457,7 +652,6 @@ def coin_health_score(coin, risk_mode):
         max_24h = 8
         max_7d = 30
 
-    # Momentum
     if 0.3 <= ch1 <= 3:
         score += 15
         reasons.append("early 1h momentum")
@@ -466,7 +660,6 @@ def coin_health_score(coin, risk_mode):
         score += 25
         reasons.append("healthy 24h move")
 
-    # Momentum proxy
     if 45 <= proxy <= 70:
         score += 20
         reasons.append("healthy momentum")
@@ -479,7 +672,6 @@ def coin_health_score(coin, risk_mode):
         score -= 10
         reasons.append("weak momentum")
 
-    # Liquidity
     if market_cap > 0:
 
         volume_ratio = volume / market_cap
@@ -500,7 +692,6 @@ def coin_health_score(coin, risk_mode):
         score += 10
         reasons.append("good liquidity")
 
-    # Risk penalties
     if ch24 > 12:
         score -= 30
         reasons.append("already pumped too much")
@@ -579,10 +770,11 @@ top5 = signals[:5]
 html("""
 <div class="card">
     <div style="font-size:34px; font-weight:900; color:white;">
-        🧠 Choose Coin For Analysis
+        🧠 Choose Coin For Analysis / Выбери монету для анализа
     </div>
     <div class="small-muted" style="margin-top:10px;">
-        Select any cryptocurrency to view momentum, liquidity and market signal.
+        🇷🇺 Выбери любую криптовалюту чтобы увидеть её моментум, ликвидность и сигнал.<br>
+        🇬🇧 Select any cryptocurrency to view its momentum, liquidity and market signal.
     </div>
 </div>
 """)
@@ -594,7 +786,7 @@ coin_ids = list(coin_options.keys())
 default_coin_id = "bitcoin" if "bitcoin" in coin_ids else coin_ids[0]
 
 selected_coin_id = st.selectbox(
-    "Choose coin",
+    "Choose coin / Выбери монету",
     coin_ids,
     index=coin_ids.index(default_coin_id),
     format_func=lambda coin_id:
@@ -612,6 +804,18 @@ metric_class = (
     else "metric-negative"
 )
 
+# Small coin warning
+is_small_cap = selected["market_cap"] < 500_000_000
+small_cap_warning = ""
+if is_small_cap and selected["score"] >= 75:
+    small_cap_warning = """
+    <div class="warning-box">
+        ⚠️ <b>Новичок — обрати внимание! / Beginner notice!</b><br><br>
+        🇷🇺 Это маленькая монета (низкий market cap). Даже при высоком скоре — риск значительно выше чем у BTC или ETH. Маленькие монеты могут быстро расти и быстро падать.<br><br>
+        🇬🇧 This is a small coin (low market cap). Even with a high score — risk is much higher than BTC or ETH. Small coins can rise fast and fall just as fast.
+    </div>
+    """
+
 left, right = st.columns([1, 1])
 
 with left:
@@ -627,35 +831,41 @@ with left:
             7d: {selected["7d"]:.2f}%<br>
             Momentum Proxy: {selected["momentum_proxy"]}/100
         </div>
+        {small_cap_warning}
     </div>
     """)
 
 with right:
+    reasons_html = explain_reasons(selected["reasons"])
+
     html(f"""
     <div class="card">
         <span class="badge {badge_color}">{decision_text}</span>
         <h1>Coin Health Score</h1>
         <h3>Score: {selected["score"]}/100</h3>
-        <br>
-        <div class="small-muted">
-            <b>Reasons:</b><br><br>
-            {", ".join(selected["reasons"])}
+        <div class="info-box">
+            🇷🇺 Этот скор показывает текущие технические признаки — не предсказание.<br>
+            🇬🇧 This score shows current technical signals — not a prediction.
         </div>
+        <br>
+        <div class="small-muted"><b>Reasons / Причины:</b></div>
+        <br>
+        {reasons_html}
     </div>
     """)
 
 # ---------- PRICE MOVEMENT ----------
-st.subheader("📈 Price Movement")
+st.subheader("📈 Price Movement / Движение цены")
 
 p1, p2, p3, p4 = st.columns(4)
 
-p1.metric("1 Hour", f"{selected['1h']:.2f}%")
-p2.metric("24 Hours", f"{selected['24h']:.2f}%")
-p3.metric("7 Days", f"{selected['7d']:.2f}%")
+p1.metric("1 Hour / 1 час", f"{selected['1h']:.2f}%")
+p2.metric("24 Hours / 24 часа", f"{selected['24h']:.2f}%")
+p3.metric("7 Days / 7 дней", f"{selected['7d']:.2f}%")
 p4.metric("Momentum Proxy", f"{selected['momentum_proxy']}/100")
 
 # ---------- BEST SETUP ----------
-st.subheader("🔥 Strongest Coin Setup")
+st.subheader("🔥 Strongest Coin Setup / Лучший сетап прямо сейчас")
 
 best_decision_text, best_color = signal_decision(best["score"])
 
@@ -668,6 +878,8 @@ best_metric = (
 b1, b2 = st.columns([3, 1])
 
 with b1:
+    best_reasons_html = explain_reasons(best["reasons"])
+
     html(f"""
     <div class="card">
         <span class="badge {best_color}">{best_decision_text}</span>
@@ -681,10 +893,9 @@ with b1:
             Score: {best["score"]}/100
         </div>
         <br>
-        <div class="small-muted">
-            <b>Why:</b><br><br>
-            {", ".join(best["reasons"])}
-        </div>
+        <div class="small-muted"><b>Why / Почему:</b></div>
+        <br>
+        {best_reasons_html}
     </div>
     """)
 
@@ -693,7 +904,7 @@ with b2:
         st.image(str(cat_orange), width=220)
 
 # ---------- TOP 5 ----------
-st.subheader("🌍 Top 5 Coin Setups")
+st.subheader("🌍 Top 5 Coin Setups / Топ 5 монет")
 
 rows = []
 
@@ -721,6 +932,6 @@ st.dataframe(
 # ---------- REFRESH ----------
 st.divider()
 
-if st.button("🔄 Refresh Market Data"):
+if st.button("🔄 Refresh Market Data / Обновить данные"):
     st.cache_data.clear()
     st.rerun()
