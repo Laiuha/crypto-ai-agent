@@ -273,7 +273,7 @@ with h2:
 # ---------- SETTINGS ----------
 html("""
 <div class="settings-box">
-    <h2>⚙️ Scanner Settings / Настройки</h2>
+    <h2>⚙️ Scanner Settings </h2>
 </div>
 """)
 
@@ -302,9 +302,9 @@ with s3:
 
 with st.expander("❓ Info"):
     st.markdown("""
-### 🇷🇺 Для новичков
+### 🇷🇺
 
-**Что такое этот инструмент?**
+**Что это за инструмент?**
 Это сканер который смотрит на движение цен криптовалют и выдаёт оценку — насколько интересна монета прямо сейчас по техническим признакам. Это НЕ предсказание будущего.
 
 **Сигналы:**
@@ -394,7 +394,7 @@ def load_btc_dominance():
 fg = load_fear_greed()
 btc_global = load_btc_dominance()
 
-st.subheader("🌐 Macro Market Context / Макро контекст рынка")
+st.subheader("🌐 Macro Market Context")
 
 m1, m2, m3 = st.columns(3)
 
@@ -471,7 +471,7 @@ with m2:
 
         html(f"""
         <div class="macro-box">
-            <div class="macro-label">{dom_emoji} BTC Dominance / Доминация BTC</div>
+            <div class="macro-label">{dom_emoji} BTC Dominance / Доминирукт BTC</div>
             <div class="macro-value {dom_class}">{dom}%</div>
             <br>
             <div class="small-muted">
@@ -810,7 +810,7 @@ small_cap_warning = ""
 if is_small_cap and selected["score"] >= 75:
     small_cap_warning = """
     <div class="warning-box">
-        ⚠️ <b>Новичок — обрати внимание! / Beginner notice!</b><br><br>
+        ⚠️ <b> Beginner notice!</b><br><br>
         🇷🇺 Это маленькая монета (низкий market cap). Даже при высоком скоре — риск значительно выше чем у BTC или ETH. Маленькие монеты могут быстро расти и быстро падать.<br><br>
         🇬🇧 This is a small coin (low market cap). Even with a high score — risk is much higher than BTC or ETH. Small coins can rise fast and fall just as fast.
     </div>
@@ -852,10 +852,9 @@ with right:
         f'<h1>Coin Health Score</h1>'
         f'<h3>Score: {selected["score"]}/100</h3>'
         f'<div class="info-box">'
-        f'🇷🇺 Этот скор показывает текущие технические признаки — не предсказание.<br>'
         f'🇬🇧 This score shows current technical signals — not a prediction.'
         f'</div>'
-        f'<br><div class="small-muted"><b>Reasons / Причины:</b></div><br>'
+        f'<br><div class="small-muted"><b>Reasons:</b></div><br>'
         f'{reasons_inner}'
         f'</div>'
     )
@@ -872,7 +871,7 @@ p3.metric("7 Days / 7 дней", f"{selected['7d']:.2f}%")
 p4.metric("Momentum Proxy", f"{selected['momentum_proxy']}/100")
 
 # ---------- BEST SETUP ----------
-st.subheader("🔥 Strongest Coin Setup / Лучший сетап прямо сейчас")
+st.subheader("🔥 Strongest Coin Setup")
 
 best_decision_text, best_color = signal_decision(best["score"])
 
@@ -916,7 +915,7 @@ with b2:
         st.image(str(cat_orange), width=220)
 
 # ---------- TOP 5 ----------
-st.subheader("🌍 Top 5 Coin Setups / Топ 5 монет")
+st.subheader("🌍 Top 5 Coin Setups")
 
 rows = []
 
@@ -944,6 +943,6 @@ st.dataframe(
 # ---------- REFRESH ----------
 st.divider()
 
-if st.button("🔄 Refresh Market Data / Обновить данные"):
+if st.button("🔄 Refresh Market Data"):
     st.cache_data.clear()
     st.rerun()
