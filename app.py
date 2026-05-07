@@ -265,7 +265,7 @@ with h2:
         <div class="big-title">Koshka Crypto AI Agent</div>
         <div class="subtitle">
             AI-assisted crypto momentum scanner using live market data, liquidity and coin health scoring.<br>
-            Сканер крипто-моментума на живых данных. Только для обучения — не финансовый совет. / Educational only — not financial advice.
+            Educational only — not financial advice.
         </div>
     </div>
     """)
@@ -281,26 +281,26 @@ s1, s2, s3 = st.columns(3)
 
 with s1:
     currency = st.selectbox(
-        "💱 Currency / Валюта",
+        "💱 Currency ",
         ["usd", "aed", "eur", "gbp", "rub"],
         index=1
     )
 
 with s2:
     risk_mode = st.selectbox(
-        "⚠️ Risk Mode / Режим риска",
+        "⚠️ Risk Mode ",
         ["Conservative", "Balanced", "Aggressive"],
         index=1
     )
 
 with s3:
     scan_size = st.selectbox(
-        "🌍 Coins To Scan / Монет для сканирования",
+        "🌍 Coins To Scan ",
         [50, 100, 150, 200],
         index=1
     )
 
-with st.expander("❓ Help / Помощь для новичков"):
+with st.expander("❓ Info"):
     st.markdown("""
 ### 🇷🇺 Для новичков
 
