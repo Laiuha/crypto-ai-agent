@@ -674,6 +674,60 @@ button[data-baseweb="tab"] {
 }
 
 
+
+/* ---------- PREMIUM FILTER ROW ---------- */
+.filter-bar-wrap {
+    margin: 18px 0 24px 0;
+    padding: 18px;
+    border: 1px solid rgba(59,130,246,0.22);
+    border-radius: 22px;
+    background: linear-gradient(135deg, rgba(2,6,23,0.42), rgba(15,23,42,0.58));
+    box-shadow: 0 18px 45px rgba(0,0,0,0.22);
+}
+.filter-helper-line {
+    color:#8f9ab8;
+    font-size:12px;
+    margin: 10px 0 0 4px;
+}
+/* make all three filters the same clean blue style */
+.filter-bar-wrap [data-testid="stSelectbox"] {
+    min-height: 118px;
+    background: linear-gradient(145deg, rgba(15,23,42,0.86), rgba(30,41,59,0.66)) !important;
+    border: 1px solid rgba(96,165,250,0.28) !important;
+    border-radius: 18px !important;
+    padding: 16px 18px 14px 18px !important;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.18) !important;
+}
+.filter-bar-wrap [data-testid="stSelectbox"]:hover {
+    border-color: rgba(96,165,250,0.55) !important;
+    box-shadow: 0 0 0 1px rgba(96,165,250,0.18), 0 14px 34px rgba(0,0,0,0.22) !important;
+}
+.filter-bar-wrap [data-testid="stSelectbox"] label p {
+    color:#ffffff !important;
+    font-size:15px !important;
+    font-weight:900 !important;
+    letter-spacing:-0.01em !important;
+}
+.filter-bar-wrap [data-baseweb="select"] > div {
+    min-height: 52px !important;
+    border-radius: 14px !important;
+    background: rgba(255,255,255,0.045) !important;
+    border: 1px solid rgba(148,163,184,0.16) !important;
+}
+.filter-bar-wrap [data-baseweb="select"] span,
+.filter-bar-wrap [data-baseweb="select"] div {
+    font-size: 19px !important;
+}
+/* first filter is wider but same style, with a slightly stronger border */
+.filter-bar-wrap div[data-testid="column"]:first-child [data-testid="stSelectbox"] {
+    border-color: rgba(96,165,250,0.48) !important;
+    box-shadow: 0 0 0 1px rgba(96,165,250,0.12), 0 14px 36px rgba(0,0,0,0.24) !important;
+}
+@media (max-width: 900px) {
+    .filter-bar-wrap { padding: 12px; }
+    .filter-bar-wrap [data-testid="stSelectbox"] { min-height: auto; }
+}
+
 </style>
 """)
 
@@ -806,9 +860,9 @@ with h1:
 with h2:
     html("""
     <div class="hero">
-        <div class="big-title">🚀 Trust Me Bro Crypto Scanner</div>
-        <div class="subtitle">
-            AI-assisted scoring engine for high-probability crypto setups.
+        <div class="big-title">Trust Me Bro Crypto Scanner</div>
+        <div class="subtitle"> Крипто сканер «Кофейная гуща»
+        <div class="subtitle"> AI-assisted scoring engine for high-probability crypto setups.
         </div>
     </div>
     """)
@@ -821,36 +875,35 @@ tab_coin, tab_opps, tab_market = st.tabs([
 ])
 
 # ---------- TAB-SPECIFIC CONTROLS ----------
-# Selected Coin only needs settings that affect the chosen coin analysis.
+# Coin Analysis filters: all controls in one clean row.
 with tab_coin:
-    html("""
-    <div class="controls-panel">
-        <span class="controls-title">⚙️ Settings</span>
-        <span class="controls-subtitle">Currency + risk mode affect score, targets and risk.</span>
-    </div>
-    """)
+    html('<div class="filter-bar-wrap">')
+    f_coin, f_currency, f_risk = st.columns([1.45, 1.0, 1.0], gap="medium")
 
-    c1, c2 = st.columns(2)
-    with c1:
+    with f_coin:
+        coin_selector_slot = st.empty()
+
+    with f_currency:
         currency = st.selectbox(
-            "Currency",
+            "💲 Currency",
             ["usd", "aed", "eur", "gbp", "rub"],
             index=1
         )
 
-    with c2:
+    with f_risk:
         risk_mode = st.selectbox(
-            "Risk Mode",
+            "🛡️ Risk Mode",
             ["Conservative", "Average", "Aggressive"],
             index=1
         )
+    html('</div>')
 
-# Best Opportunities needs scanner-only controls.
+# Best Opportunities keeps scanner-only controls.
 with tab_opps:
     html("""
     <div class="controls-panel">
         <span class="controls-title">⚙️ Settings</span>
-        <span class="controls-subtitle">Scanner size + opportunity score filter control results.</span>
+        <span class="controls-subtitle">Scanner size + minimum opportunity score control opportunities.</span>
     </div>
     """)
 
@@ -861,6 +914,7 @@ with tab_opps:
             [100, 250, 500, 750],
             index=1
         )
+        st.caption("100 = fast scan • 250 = balanced • 750 = deep scan")
 
     with s2:
         min_score_filter = st.slider(
@@ -1606,18 +1660,15 @@ with tab_coin:
     if "coin_selector" in st.session_state and st.session_state["coin_selector"] not in coin_options:
         st.session_state["coin_selector"] = default_coin_id
 
-    html("""
-    <div class="compact-row-title">🔎 Coin to analyse</div>
-    """)
-
-    selected_coin_id = st.selectbox(
-        "Choose coin",
-        coin_ids,
-        index=coin_ids.index(st.session_state.get("coin_selector", default_coin_id)),
-        format_func=lambda coin_id:
-            f"{coin_options[coin_id]['symbol']} — {coin_options[coin_id]['coin']}",
-        key="coin_selector"
-    )
+    with coin_selector_slot.container():
+        selected_coin_id = st.selectbox(
+            "🔎 Choose coin to analyse",
+            coin_ids,
+            index=coin_ids.index(st.session_state.get("coin_selector", default_coin_id)),
+            format_func=lambda coin_id:
+                f"{coin_options[coin_id]['symbol']} — {coin_options[coin_id]['coin']}",
+            key="coin_selector"
+        )
 
     selected = coin_options[selected_coin_id]
     html(f"""
@@ -1891,19 +1942,24 @@ with tab_opps:
         </div>
 
         <div class="info-box">
-            <b>Current AI View / Текущая оценка AI</b><br>
-            🟢 {best_opp['what_to_do']}<br><br>
-            <b>Entry Timing:</b> {best_opp['entry_quality']} &nbsp; | &nbsp;
-            <b>Risk Level:</b> {best_opp['risk_level']} &nbsp; | &nbsp;
-            <b>Exit Signal:</b> {best_opp['profit_status']}<br><br>
-            🇬🇧 This is currently the strongest opportunity found among the scanned coins, based on momentum, volume, liquidity, risk and market conditions.<br><br>
-            🇷🇺 Это сейчас самый сильный вариант среди просканированных монет по импульсу, объёму, ликвидности, риску и общему состоянию рынка. Это не означает “точно покупать”.
+            <b>Action:</b> {best_opp['what_to_do']}<br>
+            <b>Entry:</b> {best_opp['entry_quality']} &nbsp; | &nbsp;
+            <b>Risk:</b> {best_opp['risk_level']} &nbsp; | &nbsp;
+            <b>Profit Status:</b> {best_opp['profit_status']}<br><br>
+            🇷🇺 Это не “точно покупать”. Это лучший setup среди загруженных монет по текущим данным: импульс, объём, ликвидность, риск и отсутствие сильного перегрева.
         </div>
     </div>
     """)
 
+    # Category overview
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("🔥 Best/Watch candidates", len(clean_candidates))
+    c2.metric("💰 Already pumped", len(pumped_candidates))
+    c3.metric("⚠️ Risky / low priority", len(risky_candidates))
+    c4.metric("🌍 Coins scanned", len(signals))
+
     st.subheader("🔎 Opportunity Scanner Results")
-    st.caption("Sorted by Opportunity Score. The table separates stronger opportunities from risky or already pumped coins.")
+    st.caption("Sorted by Opportunity Score. The scanner still shows all loaded coins, but separates good setups from risky/pumped coins.")
 
     show_group = st.selectbox(
         "Show group",
@@ -2127,4 +2183,4 @@ if st.button("🔄 Refresh Market Data"):
     st.cache_data.clear()
     st.rerun()
 
-st.caption("Educational only. Not financial advice. Probably not a rug.")
+st.caption("Educational only. Not financial advice")
