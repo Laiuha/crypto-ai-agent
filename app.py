@@ -850,7 +850,7 @@ with tab_opps:
     html("""
     <div class="controls-panel">
         <span class="controls-title">⚙️ Settings</span>
-        <span class="controls-subtitle">Scanner size + minimum score control opportunities.</span>
+        <span class="controls-subtitle">Scanner size + opportunity score filter control results.</span>
     </div>
     """)
 
@@ -864,7 +864,7 @@ with tab_opps:
 
     with s2:
         min_score_filter = st.slider(
-            "Minimum Score",
+            "Minimum Opportunity Score",
             min_value=0,
             max_value=100,
             value=50,
@@ -1891,24 +1891,19 @@ with tab_opps:
         </div>
 
         <div class="info-box">
-            <b>Action:</b> {best_opp['what_to_do']}<br>
-            <b>Entry:</b> {best_opp['entry_quality']} &nbsp; | &nbsp;
-            <b>Risk:</b> {best_opp['risk_level']} &nbsp; | &nbsp;
-            <b>Profit Status:</b> {best_opp['profit_status']}<br><br>
-            🇷🇺 Это не “точно покупать”. Это лучший setup среди загруженных монет по текущим данным: импульс, объём, ликвидность, риск и отсутствие сильного перегрева.
+            <b>Current AI View / Текущая оценка AI</b><br>
+            🟢 {best_opp['what_to_do']}<br><br>
+            <b>Entry Timing:</b> {best_opp['entry_quality']} &nbsp; | &nbsp;
+            <b>Risk Level:</b> {best_opp['risk_level']} &nbsp; | &nbsp;
+            <b>Exit Signal:</b> {best_opp['profit_status']}<br><br>
+            🇬🇧 This is currently the strongest opportunity found among the scanned coins, based on momentum, volume, liquidity, risk and market conditions.<br><br>
+            🇷🇺 Это сейчас самый сильный вариант среди просканированных монет по импульсу, объёму, ликвидности, риску и общему состоянию рынка. Это не означает “точно покупать”.
         </div>
     </div>
     """)
 
-    # Category overview
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("🔥 Best/Watch candidates", len(clean_candidates))
-    c2.metric("💰 Already pumped", len(pumped_candidates))
-    c3.metric("⚠️ Risky / low priority", len(risky_candidates))
-    c4.metric("🌍 Coins scanned", len(signals))
-
     st.subheader("🔎 Opportunity Scanner Results")
-    st.caption("Sorted by Opportunity Score. The scanner still shows all loaded coins, but separates good setups from risky/pumped coins.")
+    st.caption("Sorted by Opportunity Score. The table separates stronger opportunities from risky or already pumped coins.")
 
     show_group = st.selectbox(
         "Show group",
