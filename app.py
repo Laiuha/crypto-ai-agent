@@ -1238,6 +1238,121 @@ def risk_level(coin):
         return "🟡 Elevated Risk", "yellow"
     return "🟢 Average Risk", "green"
 
+
+def fomo_risk_score(coin):
+    """0-100 risk that the coin is already too extended for a fresh entry.
+    Uses only CoinGecko market-list data, so it is an anti-FOMO proxy, not technical analysis.
+    """
+    ch1 = coin["1h"]
+    ch24 = coin["24h"]
+    ch7 = coin["7d"]
+    proxy = coin["momentum_proxy"]
+
+    risk = 0
+    if ch1 > 2.5:
+        risk += min(25, (ch1 - 2.5) * 5)
+    if ch24 > 6:
+        risk += min(35, (ch24 - 6) * 3.2)
+    if ch7 > 18:
+        risk += min(30, (ch7 - 18) * 1.4)
+    if proxy > 70:
+        risk += min(20, (proxy - 70) * 1.2)
+    if ch24 < -8 or ch7 < -15:
+        risk += 18
+
+    return round(max(0, min(100, risk)), 1)
+
+def fomo_risk_label(coin):
+    score = fomo_risk_score(coin)
+    if score >= 70:
+        return score, "🔴 Very High", "red", "Fresh entry looks dangerous — likely late/FOMO zone."
+    if score >= 45:
+        return score, "🟡 Elevated", "yellow", "Entry is not clean. Better wait for pullback/confirmation."
+    return score, "🟢 Controlled", "green", "No strong FOMO warning from available data."
+
+def entry_zone_score(coin):
+    """Higher is better for a fresh buy timing. Penalizes pumps and broken momentum."""
+    ch1 = coin["1h"]
+    ch24 = coin["24h"]
+    ch7 = coin["7d"]
+    proxy = coin["momentum_proxy"]
+    vr = coin["volume_ratio"]
+
+    score = 50
+
+    # Good: early green momentum, not vertical.
+    if 0.2 <= ch1 <= 2.5:
+        score += 18
+    elif ch1 > 4:
+        score -= 20
+    elif ch1 < -2:
+        score -= 12
+
+    # Good: controlled daily move.
+    if 0.5 <= ch24 <= 6:
+        score += 22
+    elif 6 < ch24 <= 10:
+        score += 6
+    elif ch24 > 10:
+        score -= 28
+    elif ch24 < -6:
+        score -= 22
+
+    # Good: weekly trend exists but is not overheated.
+    if 0 <= ch7 <= 22:
+        score += 16
+    elif 22 < ch7 <= 35:
+        score -= 4
+    elif ch7 > 35:
+        score -= 25
+    elif ch7 < -12:
+        score -= 14
+
+    if 45 <= proxy <= 68:
+        score += 14
+    elif proxy > 76:
+        score -= 18
+    elif proxy < 35:
+        score -= 10
+
+    if vr > 0.03:
+        score += 8
+    else:
+        score -= 10
+
+    return round(max(0, min(100, score)), 1)
+
+def entry_zone_label(coin):
+    score = entry_zone_score(coin)
+    fomo_score, _, _, _ = fomo_risk_label(coin)
+    if score >= 75 and fomo_score < 45:
+        return score, "🟢 Clean Entry Zone", "green"
+    if score >= 55 and fomo_score < 70:
+        return score, "🟡 Watch / Wait Pullback", "yellow"
+    return score, "🔴 Bad Fresh Entry", "red"
+
+def reference_levels_from_price(coin):
+    """Simple current-price reference zones to make the app less blind.
+    These are not real support/resistance from candles, but help avoid chasing.
+    """
+    price = coin.get("price") or 0
+    if price <= 0:
+        return {"pullback_entry": "N/A", "support_proxy": "N/A", "resistance_proxy": "N/A"}
+
+    fomo_score = fomo_risk_score(coin)
+    if fomo_score >= 70:
+        pullback_pct = 10
+    elif fomo_score >= 45:
+        pullback_pct = 7
+    else:
+        pullback_pct = 4
+
+    return {
+        "pullback_entry": f"{fmt(price * (1 - pullback_pct / 100))} ({pullback_pct}% pullback)",
+        "support_proxy": f"{fmt(price * 0.93)} to {fmt(price * 0.96)}",
+        "resistance_proxy": f"{fmt(price * 1.06)} to {fmt(price * 1.12)}",
+    }
+
 def what_to_do(coin, fg=None):
     """Immediate action for this coin right now.
     This is NOT an exit/sell signal. It answers: what should I do with this coin now?
@@ -1304,7 +1419,7 @@ def trade_action(coin, fg=None, btc_global=None):
     if high_risk and score < 85:
         return "🔴 AVOID", "red", "Setup может быть интересным, но риск слишком высокий."
 
-    if score >= 68 and "Good Early Setup" in eq and not high_risk:
+    if score >= 68 and "Early" in eq and not high_risk:
         if market_bias in ["ALT_FRIENDLY", "ACCUMULATION", "MIXED"]:
             return "🟢 GOOD SETUP", "green", "Монета выглядит интересно: есть ранний momentum, объём и приемлемый риск."
         return "🟡 WATCH", "yellow", "Setup неплохой, но рынок сейчас не идеальный."
@@ -1449,9 +1564,8 @@ def factor_interpretations(coin):
 
 
 def opportunity_analysis(coin):
-    """Scanner-specific ranking for Best Opportunities.
-    It evaluates all loaded coins and tries to find realistic opportunities,
-    not only the highest raw setup score.
+    """Conservative opportunity ranking.
+    Goal: find realistic fresh entries, not coins that already pumped.
     """
     score = coin.get("score", 0)
     ch1 = coin["1h"]
@@ -1460,72 +1574,87 @@ def opportunity_analysis(coin):
     vr = coin["volume_ratio"]
     mcap = coin["market_cap"]
     proxy = coin["momentum_proxy"]
+
     entry, _, _ = entry_quality(coin)
     risk, _ = risk_level(coin)
     ps, _, _ = profit_status(coin, fg)
+    fomo_score, fomo_label, _, _ = fomo_risk_label(coin)
+    ez_score, ez_label, _ = entry_zone_label(coin)
 
-    opp = score
     positives = []
     negatives = []
 
-    if "Early" in entry:
-        opp += 14
-        positives.append("early entry timing")
-    elif "Wait" in entry:
-        opp -= 4
-        negatives.append("entry is not ideal yet")
-    elif "Too Late" in entry:
-        opp -= 28
-        negatives.append("already looks late / overheated")
-    else:
-        opp -= 12
-        negatives.append("weak buy timing")
+    # Start from 3 pillars, weighted toward fresh-entry quality.
+    opp = (score * 0.35) + (ez_score * 0.45) + ((100 - fomo_score) * 0.20)
 
-    if 0.5 <= ch24 <= 10:
+    if "Clean Entry" in ez_label:
         opp += 10
-        positives.append("healthy 24h move")
-    elif ch24 > 12:
-        opp -= 26
+        positives.append("cleaner fresh-entry zone")
+    elif "Watch" in ez_label:
+        positives.append("watchlist, but wait for pullback")
+        negatives.append("entry is not perfect yet")
+    else:
+        opp -= 16
+        negatives.append("bad fresh-entry timing")
+
+    if 0.2 <= ch1 <= 2.5:
+        opp += 6
+        positives.append("early 1h momentum")
+    elif ch1 > 4:
+        opp -= 12
+        negatives.append("1h move may be chasing")
+
+    if 0.5 <= ch24 <= 6:
+        opp += 10
+        positives.append("controlled 24h move")
+    elif 6 < ch24 <= 10:
+        positives.append("positive 24h trend")
+        negatives.append("24h move already strong")
+    elif ch24 > 10:
+        opp -= 22
         negatives.append("24h pump is too high")
     elif ch24 < -6:
         opp -= 18
         negatives.append("falling hard in 24h")
 
-    if 0 <= ch7 <= 30:
+    if 0 <= ch7 <= 22:
         opp += 8
         positives.append("healthy weekly trend")
+    elif 22 < ch7 <= 35:
+        opp -= 6
+        negatives.append("weekly move is extended")
     elif ch7 > 35:
-        opp -= 18
+        opp -= 22
         negatives.append("weekly move may be overheated")
     elif ch7 < -12:
         opp -= 12
         negatives.append("weekly trend is weak")
 
     if vr > 0.08:
-        opp += 12
+        opp += 8
         positives.append("strong trading volume")
     elif vr > 0.03:
-        opp += 6
+        opp += 4
         positives.append("normal trading activity")
     else:
-        opp -= 18
+        opp -= 15
         negatives.append("low volume / weaker signal")
 
     if mcap >= 500_000_000:
-        opp += 8
+        opp += 6
         positives.append("good liquidity")
     elif mcap < 100_000_000:
-        opp -= 15
+        opp -= 18
         negatives.append("small cap risk")
 
-    if 45 <= proxy <= 70:
-        opp += 8
+    if 45 <= proxy <= 68:
+        opp += 6
         positives.append("balanced momentum")
-    elif proxy > 78:
-        opp -= 15
+    elif proxy > 76:
+        opp -= 16
         negatives.append("momentum overheated")
     elif proxy < 35:
-        opp -= 12
+        opp -= 10
         negatives.append("weak momentum")
 
     if "High Risk" in risk:
@@ -1535,19 +1664,26 @@ def opportunity_analysis(coin):
         opp -= 8
         negatives.append("risk is elevated")
 
+    if fomo_score >= 70:
+        opp -= 28
+        negatives.append("very high FOMO risk")
+    elif fomo_score >= 45:
+        opp -= 10
+        negatives.append("elevated FOMO risk")
+
     if "Take Profit" in ps or "Exit" in ps:
-        opp -= 16
+        opp -= 18
         negatives.append("exit/profit warning")
 
     opp = round(max(0, min(100, opp)), 1)
 
-    if ch24 > 12 or ch7 > 35 or proxy > 78:
+    if fomo_score >= 70 or ch24 > 12 or ch7 > 35 or proxy > 78:
         category = "💰 Already Pumped / Don’t Chase"
         cat_color = "red"
     elif "High Risk" in risk or (mcap < 100_000_000 and vr < 0.03):
         category = "⚠️ Risky / Avoid"
         cat_color = "red"
-    elif opp >= 75 and "Early" in entry:
+    elif opp >= 75 and "Clean Entry" in ez_label:
         category = "🔥 Best Opportunity"
         cat_color = "green"
     elif opp >= 55:
@@ -1568,6 +1704,10 @@ def opportunity_analysis(coin):
         "category_color": cat_color,
         "positive_reasons": positives[:4],
         "negative_reasons": negatives[:4],
+        "fomo_score": fomo_score,
+        "fomo_label": fomo_label,
+        "entry_zone_score": ez_score,
+        "entry_zone_label": ez_label,
     }
 
 def plan_explanation(plan_key, action):
@@ -1635,6 +1775,7 @@ for coin in market_data:
     # Keep old names for export/table compatibility, but they now mean Profit Status.
     signal["exit_signal"], signal["exit_color"], signal["exit_reason"] = signal["profit_status"], signal["profit_color"], signal["profit_reason"]
     signal["action"], signal["action_color"], signal["action_reason"] = trade_action(signal, fg, btc_global)
+    signal["reference_levels"] = reference_levels_from_price(signal)
     signal["plan"] = trade_plan(signal, signal["action"])
     opp = opportunity_analysis(signal)
     signal.update(opp)
@@ -1711,7 +1852,7 @@ with tab_coin:
                             <div class="coin-subtitle-small">{selected["coin"]}</div>
                         </div>
                     </div>
-                    <span class="badge {selected["what_color"]}" style="margin:0; font-size:13px; padding:8px 12px;">Watchlist</span>
+                    <span class="badge {selected["what_color"]}" style="margin:0; font-size:13px; padding:8px 12px;">{selected["what_to_do"]}</span>
                 </div>
 
                 <div class="price-line">
@@ -1945,7 +2086,9 @@ with tab_opps:
             <b>Action:</b> {best_opp['what_to_do']}<br>
             <b>Entry:</b> {best_opp['entry_quality']} &nbsp; | &nbsp;
             <b>Risk:</b> {best_opp['risk_level']} &nbsp; | &nbsp;
-            <b>Profit Status:</b> {best_opp['profit_status']}<br><br>
+            <b>Profit Status:</b> {best_opp['profit_status']}<br>
+            <b>FOMO Risk:</b> {best_opp.get('fomo_label', 'N/A')} ({best_opp.get('fomo_score', 0)}/100)<br>
+            <b>Pullback Entry Ref:</b> {best_opp.get('reference_levels', {}).get('pullback_entry', 'N/A')}<br><br>
             🇷🇺 Это не “точно покупать”. Это лучший setup среди загруженных монет по текущим данным: импульс, объём, ликвидность, риск и отсутствие сильного перегрева.
         </div>
     </div>
@@ -1986,6 +2129,8 @@ with tab_opps:
             "Price": f"{fmt(s['price'])} {currency.upper()}",
             "Opportunity": s["opportunity_score"],
             "Setup": s["score"],
+            "Entry Zone": s.get("entry_zone_label", ""),
+            "FOMO Risk": f"{s.get('fomo_label', '')} ({s.get('fomo_score', 0)})",
             "Category": s["category"],
             "1h %": round(s["1h"], 2),
             "24h %": round(s["24h"], 2),
@@ -2183,4 +2328,4 @@ if st.button("🔄 Refresh Market Data"):
     st.cache_data.clear()
     st.rerun()
 
-st.caption("Educational only. Not financial advice")
+st.caption("Educational only. Not financial advice. Scanner uses simplified public market data; always verify manually.")
